@@ -18,5 +18,19 @@
     <ClCompile Include="Origine1.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="Image.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="encpass.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Image.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="encpass.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
