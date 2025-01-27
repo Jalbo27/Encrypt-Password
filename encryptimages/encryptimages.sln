@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "encryptimages", "encryptimages.csproj", "{72CEEC92-4601-4E8C-8532-5211A3F4F276}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "encryption", "encryption\encryption.vcxproj", "{C75DC84D-B8D5-470D-ABF1-71D1F0732E7A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{72CEEC92-4601-4E8C-8532-5211A3F4F276}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72CEEC92-4601-4E8C-8532-5211A3F4F276}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72CEEC92-4601-4E8C-8532-5211A3F4F276}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C75DC84D-B8D5-470D-ABF1-71D1F0732E7A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{C75DC84D-B8D5-470D-ABF1-71D1F0732E7A}.Debug|Any CPU.Build.0 = Debug|x64
+		{C75DC84D-B8D5-470D-ABF1-71D1F0732E7A}.Release|Any CPU.ActiveCfg = Release|x64
+		{C75DC84D-B8D5-470D-ABF1-71D1F0732E7A}.Release|Any CPU.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
