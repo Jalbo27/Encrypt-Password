@@ -48,42 +48,42 @@
             </form>
           </div>
         </div>
-      </nav>
-      <form class="row g-3 align-text-top" style="padding-block-start: 3ch; padding-left: 30ch;">
-          <div class="col-1 form-floating" name="name-control">
-            <input type="text" class="form-control" id="floatingInput" name="name" placeholder="Name" value="">
-            <label for="floatingInput">Name</label>
-          </div>
-          <div class="col-auto form-floating" name="username-control">
-            <input type="text" class="form-control" id="floatingInput" name="username" placeholder="Username" value="">
-            <label for="floatingInput">Username</label>
-          </div> 
-          <div class="col-3 form-floating" name="password-control">
-            <input type="password" class="form-control" id="floatingInput" name="password" placeholder="Password" aria-describedby="passwordHelpInline" value="">
-            <label for="floatingInput">Password</label>
-          </div>
-          <div class="col-3 form-floating" name="uri-control">
-            <input type="url" class="form-control" id="floatingInput" name="uri" placeholder="URI:\\" value="">
-            <label for="floatingInput">URI:\\</label>
-          </div>
-          <div class="col-auto">
-              <button type="submit" class="btn btn-success btn-lg" id="liveToastBtn">Submit</button>
-              <div class="toast-container position-fixed bottom-0 end-0 p-3">
-                <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                  <div class="toast-header">
-                    <img class="rounded me-2">
-                    <strong class="me-auto">Bootstrap</strong>
-                    <small>Now</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                  </div>
-                  <div class="toast-body">
-                    Hello, world! This is a toast message.
-                  </div>
+    </nav>
+    <form class="row g-3 align-text-top" style="padding-block-start: 3ch; padding-left: 30ch;">
+        <div class="col-1 form-floating">
+          <input type="text" class="form-control" id="floatingInput" name="name-control" placeholder="Name">
+          <label for="floatingInput">Name</label>
+        </div>
+        <div class="col-auto form-floating">
+          <input type="text" class="form-control" id="floatingInput" name="username-control" placeholder="Username">
+          <label for="floatingInput">Username</label>
+        </div> 
+        <div class="col-3 form-floating">
+          <input type="password" class="form-control" id="floatingInput" name="password-control" placeholder="Password" aria-describedby="passwordHelpInline">
+          <label for="floatingInput">Password</label>
+        </div>
+        <div class="col-3 form-floating">
+          <input type="url" class="form-control" id="floatingInput" name="uri-control" placeholder="URI:\\">
+          <label for="floatingInput">URI:\\</label>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-success btn-lg" id="liveToastBtn">Submit</button>
+            <div class="toast-container position-fixed bottom-0 end-0 p-3">
+              <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                  <img class="rounded me-2">
+                  <strong class="me-auto">Bootstrap</strong>
+                  <small>Now</small>
+                  <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                  Hello, world! This is a toast message.
                 </div>
               </div>
-          </div>
-        </form>
-      <div class="grid text-center">
+            </div>
+        </div>
+      </form>
+    <div class="grid text-center">
         <table class="table table-striped table-hover table-bordered caption-top border border-rounded-4 border-primary border-4" id="table">
           <caption>List of passwords</caption>
           <thead>
@@ -120,6 +120,6 @@
             </tr>
           </tfoot>
       </table>
-      </div>
+    </div>
   </body>
 </html>
