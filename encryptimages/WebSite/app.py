@@ -1,9 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, make_response
+import sys, os 
+sys.path.insert(0, os.getcwd()+"/.venv/lib/") 
+from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
+#from flask_json import FlaskJSON, json_response, JsonError
 from engine import Engine
 from markupsafe import escape
 import json
 
 app = Flask(__name__)
+
 responder = Engine()
 
 password_dict = [{}]
@@ -13,10 +17,11 @@ index = 0
 @app.route("/homepage/")
 @app.route("/homepage/<string:name>")
 def home_page(name=''):
-    return render_template("homepage.html", account=escape(name)) 
+    return render_template("homepage.html", account=escape(name), id=len(password_dict)) 
 
-@app.route("/homepage/upload/<password>", methods=['POST'])
-def uploadPassword(password):
+@app.route("/homepage/<id>", methods=['POST'])
+def uploadPassword(id):
+    print('i\'m here')
     req_pass = json.load(request.json)
     password_dict.append(
         {
@@ -26,12 +31,20 @@ def uploadPassword(password):
         'uri': req_pass['uri']
         }
     )
+    print('i\'m here')
     name = password_dict['name']
     username = password_dict['username']
     password = password_dict['password']
     uri = password_dict['uri']
+    print('i\'m here')
+    # name = request.form['name']
+    # username = request.form['username']
+    # password = request.form['password']
+    # uri = request.form['uri']
     if responder.sanityPassword(name, username, password, uri):
-        return render_template("homepage.html/", newLine=password_dict)
+        print('i\'m here')
+        return jsonify(password_dict, status=200, mimetype="application/json")
+        #return render_template("homepage.html/", newLine=password_dict)
     else:
         return render_template("homepage.html/")
 
