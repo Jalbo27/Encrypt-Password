@@ -47,7 +47,7 @@ window.onload = () => {
     event.preventDefault();
     console.log('I\'m under submit event')
     const form = event.currentTarget;
-    const url = "http://127.0.0.1:5000/homepage/0"      
+    const url = "http://127.0.0.1:5000/homepage/"      
     try {
       const formData = new FormData(form);
       const responseData = await postFormDataAsJson({ url, formData })
@@ -69,12 +69,6 @@ window.onload = () => {
 async function postFormDataAsJson({ url, formData }) {
   console.log('I\'m under postFormDataAsJson function')
   /**
-   * We can't pass the `FormData` instance directly to `fetch`
-   * as that will cause it to automatically format the request
-   * body as "multipart" and set the `Content-Type` request header
-   * to `multipart/form-data`. We want to send the request body
-   * as JSON, so we're converting it to a plain object and then
-   * into a JSON string.
    * 
    * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/fromEntries
@@ -89,7 +83,7 @@ async function postFormDataAsJson({ url, formData }) {
       "Content-Type": "application/json",
       "Accept": "application/json"
     },
-    body: JSON.stringify(container),
+    body: JSON.stringify(container)
   }).then(response => {
     if (!response.ok) {
       const errorMessage = response.text();
