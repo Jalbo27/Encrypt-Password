@@ -1,11 +1,11 @@
-import re
 from account import Account
+from secureEngine import Secure
 
 class Engine:
     ###
-    __translation_table = str.maketrans("","","<>-- #")
-    __translation_pass = str.maketrans("", "", "<>--#")
+
     __account = Account()
+    __security = Secure()
         
     ###
     def __init__(self, name, username, password, uri):
@@ -25,16 +25,10 @@ class Engine:
     def __str__(self):
         pass
     
-    ### Ensure password and others fields are corrects
-    def checkSecurity(self, name: str, username: str, password: str, uri: str):
-        if(self.__checkSecurity(name, username, password, uri)):
-            name = name.translate(self.__translation_table)
-            username = username.translate(username)
-            password = password.translate(self.__translation_pass)
-            uri = uri.translate(self.__translation_table)
-
-            if(re.fullmatch(r'[A-Za-z0-9@#$%^&+=]{1,}', password)):
-                return True
+    ### Ensure password and others fields are corrects using class Secure
+    def sanityPassword(self, name: str, username: str, password: str, uri: str):
+        if(self.__security.passwordValidation(name, username, password, uri)):
+            return True
         else:
             return False
         

@@ -12,3 +12,8 @@
 #EmailInput{
     margin: auto;
 }
+
+body{
+    position: relative;
+    overflow-y: hidden;
+}

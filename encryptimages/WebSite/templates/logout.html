@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" class="html__responsive">
     <head>
-        <title>Password Manager | Alberto Lorenzini</title>
+        <title>Password Manager | Logout</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Password Manager for users, download and upload password">
@@ -9,7 +9,6 @@
         <link rel="stylesheet" type="text/css" href="../static/bootstrap/css/bootstrap.css">
         <script type="text/javascript" src="../static/bootstrap/js/bootstrap.js"></script>
         <script type="text/javascript" src="../static/bootstrap/js/snippets.js"></script>
-        <script type="text/javascript" src="../static/script.js"></script>
     </head>
     <body data-bs-theme="dark">
         <nav class="navbar navbar-expand-lg bg-body-tertiary" id="nav-bar">
@@ -34,7 +33,7 @@
           <h4 class="alert-heading">Logout</h4>
           <p>You have logout successfully!!</p>
           <hr>
-          <p class="mb-0">Return to <a href="/login/" class="alert-link">login page</a></p>
+          <p class="mb-0">Return to <a href="{{ url_for('loginPage')}}" class="alert-link">login page</a></p>
         </div>
     </body>
 </html>

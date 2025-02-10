@@ -1,0 +1,21 @@
+import re
+
+class Secure:
+    __translation_table = str.maketrans("","","<>-- #")
+    __translation_pass = str.maketrans("", "", "<>--#")
+    
+    def __init__(self):
+        pass
+    
+    ### Ensure password and others fields are corrects
+    def passwordValidation(self, name: str, username: str, password: str, uri: str):
+        cpname = name.translate(self.__translation_table)
+        cpusername = username.translate(username)
+        cppassword = password.translate(self.__translation_pass)
+        cpuri = uri.translate(self.__translation_table)
+        is_match = re.fullmatch(r'[A-Za-z0-9#$%^&+=]{8,}', password)
+        
+        if(cpname == name and cpusername == username and cppassword == password and cpuri == uri and is_match is not None):
+            return True
+        else:
+            return False
