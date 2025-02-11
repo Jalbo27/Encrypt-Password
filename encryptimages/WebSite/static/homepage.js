@@ -30,6 +30,10 @@ window.onload = () => {
       let responseData = await postFormDataAsJson({ url })
       console.log(responseData);
       addNewPassword(responseData);
+      document.getElementsByName("name-control")[0].value = '';
+      document.getElementsByName("username-control")[0].value = '';
+      document.getElementsByName("password-control")[0].value = '';
+      document.getElementsByName("uri-control")[0].value = '';
     } catch (error) {
       console.error(error);
     }
@@ -78,27 +82,22 @@ async function postFormDataAsJson({ url }) {
 
 function addNewPassword(data){
   let table = document.getElementById("table-body");
-  // table.firstElementChild.childNodes[3].textContent = data['name'];
-  // table.firstElementChild.childNodes[5].textContent = data['username'];
-  // table.firstElementChild.childNodes[7].textContent = data['password'];
-  // table.firstElementChild.childNodes[9].textContent = data['uri'];
 
   /* CREATE OF FIELD AND NEW LINE INSIDE OF TABLE FOR NEW PASSWORDS */
-  let line = document.createElement('tr');
-  let field = document.createElement('th');
-  field.scope = 'col';
-  console.log(field)
-  // let field_id = document.createElement('th');
-  // let field_name = document.createElement('th');
-  // let field_username = document.createElement('th');
-  // let field_password = document.createElement('th');
-  // let field_uri = document.createElement('th');
+
   let delBtn = document.createElement('button');
+  delBtn.classList.add(["btn", "btn-danger"]);
   let editBtn = document.createElement('button');
+  editBtn.classList.add(["btn", "btn-primary"])
+  let line = document.createElement('tr');
 
   /* ADD OF NEW LINE INSIDE OF THE TABLE */
-  for (i = 0; i < 7; i++)
-    line.append(field);
+  for (i = 0; i < 7; i++){
+    let field = document.createElement('th');
+    field.scope = 'col';
+    line.appendChild(field);
+    //table.appendChild(line)
+  }
 
   console.log(line);
   line.childNodes[0].textContent = 0;
@@ -109,8 +108,8 @@ function addNewPassword(data){
   line.childNodes[2].textContent = data['username'];
   line.childNodes[3].textContent = data['password'];
   line.childNodes[4].textContent = data['uri'];
-  line.childNodes[5].appendChild(editBtn.classList.add("btn btn-primary"));
-  line.childNodes[6].appendChild(delBtn.classList.add("btn btn-danger"));
+  line.childNodes[5].appendChild(editBtn);
+  line.childNodes[6].appendChild(delBtn);
   console.log('line: ' + line);
 
   table.appendChild(line);
