@@ -22,25 +22,17 @@ def home_page(name=''):
 
 @app.route("/homepage/", methods=['POST'])
 def uploadPassword():
-    print('i\'m here', request.json)
-    #print(req_pass)
-    password_dict.append(
-        request.get_json()
-    )
+    password_dict.append(request.get_json())
     print('i\'m here', password_dict)
     name = password_dict[-1]['name']
     username = password_dict[-1]['username']
     password = password_dict[-1]['password']
     uri = password_dict[-1]['uri']
-    print(f'i\'m here name: {name} username: {username} password: {password} uri: {uri}')
-    # name = request.form['name']
-    # username = request.form['username']
-    # password = request.form['password']
-    # uri = request.form['uri']
     if responder.sanityPassword(name, username, password, uri):
         print('i\'m here inside sanity password function')
-        #return jsonify(password_dict[-1], status=200, mimetype="application/json")
-        return render_template("homepage.html/", newLine=password_dict, len=len(password_dict))
+        print('response sent')
+        return jsonify(password_dict[-1])
+        #return render_template("homepage.html/", newLine=password_dict[-1])
     else:
         return render_template("homepage.html/")
 

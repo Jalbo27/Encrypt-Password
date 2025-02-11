@@ -19,39 +19,17 @@ window.onload = () => {
     console.log('password: ' + container.password);
     console.log('uri: ' + container.uri);
     console.log(container);
-
-    // const url = "http://127.0.0.1:5000/homepage/"
-    // fetch(url,{
-    //   method: "POST",
-    //   headers: {"Content-Type": "application/json"},
-    //   body: JSON.stringify(container)
-    // }).then(response =>{
-    //   if(!response.ok){
-    //     throw new Error("Errore")
-    //   }
-    // })
-    // .then(data => {
-    //   console.log(data);
-    // })
-    //.then(console.error(error))
-
-    // container.forEach((object1, index, line) => {
-    //   object1.forEach((internal_object, index2, line2) => {
-    //     console.log(line[index][index2])
-    //   });
-    // });
   });
 
   const form = document.getElementById("form");
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     console.log('I\'m under submit event')
-    const form = event.currentTarget;
     const url = "http://127.0.0.1:5000/homepage/"      
     try {
-      const formData = new FormData(form);
-      const responseData = await postFormDataAsJson({ url, formData })
-      console.log({ responseData });
+      let responseData = await postFormDataAsJson({ url })
+      console.log(responseData);
+      addNewPassword(responseData);
     } catch (error) {
       console.error(error);
     }
@@ -66,16 +44,15 @@ window.onload = () => {
  * @param {FormData} options.formData - `FormData` instance
  * @return {Object} - Response body from URL that was POSTed to
  */
-async function postFormDataAsJson({ url, formData }) {
+async function postFormDataAsJson({ url }) {
   console.log('I\'m under postFormDataAsJson function')
   /**
    * 
    * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/fromEntries
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
-   */
-  //const plainFormData = Object.fromEntries(formData.entries());
-  //const formDataJsonString = JSON.stringify(container);
+   * 
+  */
   console.log("JSON FORMAT: \n" + JSON.stringify(container));
   const response = await fetch(url, {
     method: "POST",
@@ -89,9 +66,52 @@ async function postFormDataAsJson({ url, formData }) {
       const errorMessage = response.text();
       throw new Error(errorMessage);
     }
-  }).then( response => {
-    console.log(response.json())
-  })
+    else{
+      return response.json().then(value => {
+        return value;
+      });
+    }
+  });
 
-  return response.json();
+  return response;
+}
+
+function addNewPassword(data){
+  let table = document.getElementById("table-body");
+  // table.firstElementChild.childNodes[3].textContent = data['name'];
+  // table.firstElementChild.childNodes[5].textContent = data['username'];
+  // table.firstElementChild.childNodes[7].textContent = data['password'];
+  // table.firstElementChild.childNodes[9].textContent = data['uri'];
+
+  /* CREATE OF FIELD AND NEW LINE INSIDE OF TABLE FOR NEW PASSWORDS */
+  let line = document.createElement('tr');
+  let field = document.createElement('th');
+  field.scope = 'col';
+  console.log(field)
+  // let field_id = document.createElement('th');
+  // let field_name = document.createElement('th');
+  // let field_username = document.createElement('th');
+  // let field_password = document.createElement('th');
+  // let field_uri = document.createElement('th');
+  let delBtn = document.createElement('button');
+  let editBtn = document.createElement('button');
+
+  /* ADD OF NEW LINE INSIDE OF THE TABLE */
+  for (i = 0; i < 7; i++)
+    line.append(field);
+
+  console.log(line);
+  line.childNodes[0].textContent = 0;
+  line.childNodes[0].classList.add("col-1");
+  line.childNodes[5].classList.add("col-1");
+  line.childNodes[6].classList.add("col-1");
+  line.childNodes[1].textContent = data['name'];
+  line.childNodes[2].textContent = data['username'];
+  line.childNodes[3].textContent = data['password'];
+  line.childNodes[4].textContent = data['uri'];
+  line.childNodes[5].appendChild(editBtn.classList.add("btn btn-primary"));
+  line.childNodes[6].appendChild(delBtn.classList.add("btn btn-danger"));
+  console.log('line: ' + line);
+
+  table.appendChild(line);
 }

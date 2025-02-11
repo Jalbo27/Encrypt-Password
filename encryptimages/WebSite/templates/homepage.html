@@ -107,18 +107,7 @@
           <th scoper="col">Delete</th>
         </tr>
       </thead>
-      <tbody class="table-group-divider">
-        {% for n in range(0, len) %}
-        <tr>
-          <th scope="col" class="col-1">{{ n }}</th>
-          <th scope="col">{{ newLine[n]['name'] }}</th>
-          <th scope="col">{{ newLine[n]['username'] }}</th>
-          <th scope="col">{{ newLine[n]['password'] }}</th>
-          <th scope="col">{{ newLine[n]['uri'] }}</th>
-          <th scope="col" class="col-1"><button type="button" class="btn btn-primary">Edit</button></th>
-          <th scope="col" class="col-1"><button type="button" class="btn btn-danger">Delete</button></th>
-        </tr>
-        {% endfor %}
+      <tbody class="table-group-divider" id="table-body">
       </tbody>
       <tfoot class="table-group-divider">
         <tr>
