@@ -2,8 +2,8 @@ from account import Account
 from secureEngine import Secure
 
 class Engine:
-    ###
-
+    
+    ### Private Account and Security variables
     __account = Account()
     __security = Secure()
         
@@ -32,6 +32,7 @@ class Engine:
         else:
             return False
         
+    ###     
     def account(self, name, password, is_new):
         if(is_new):
             return self.__account.createAccount(name, password)

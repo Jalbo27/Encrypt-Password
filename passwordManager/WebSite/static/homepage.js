@@ -1,9 +1,9 @@
 let container = {};
 
 window.onload = () => {
-/**
- * CONTROLLO LATO BACKEND DEI DATI INSERITI DALL'UTENTE E AGGIUNTA IN TABELLA DEI NUOVI CAMPI
- */
+  /**
+   * CONTROLLO LATO BACKEND DEI DATI INSERITI DALL'UTENTE E AGGIUNTA IN TABELLA DEI NUOVI CAMPI
+   */
   const form = document.getElementById("form");
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -26,11 +26,11 @@ window.onload = () => {
     console.log('password: ' + container.password);
     console.log('uri: ' + container.uri);
     console.log(container);
-    console.log('I\'m under submit event')    
+    console.log('I\'m under submit event')
     try {
-      if(name_pass != '' && username != '' && password != '' && uri != ''){
+      if (name_pass != '' && username != '' && password != '' && uri != '') {
         const url = "http://127.0.0.1:5000/homepage/";
-        let responseData = await postFormDataAsJson({ url });
+        let responseData = await sendForm({ url });
         console.log(responseData);
         addNewPassword(responseData);
         name_pass.value = '';
@@ -42,8 +42,8 @@ window.onload = () => {
           myInput.focus()
         })
       }
-      else{  
-        console.log('error'); 
+      else {
+        console.log('error');
         myModal.addEventListener('shown.bs.modal', () => {
           myInput.focus()
         })
@@ -62,7 +62,7 @@ window.onload = () => {
  * @param {FormData} options.formData - `FormData` instance
  * @return {Object} - Response body from URL that was POSTed to
  */
-async function postFormDataAsJson({ url }) {
+async function sendForm({ url }) {
   console.log('I\'m under postFormDataAsJson function')
   /**
    * 
@@ -84,7 +84,7 @@ async function postFormDataAsJson({ url }) {
       const errorMessage = response.text();
       throw new Error(errorMessage);
     }
-    else{
+    else {
       return response.json().then(value => {
         return value;
       });
@@ -94,7 +94,7 @@ async function postFormDataAsJson({ url }) {
   return response;
 }
 
-function addNewPassword(data){
+function addNewPassword(data) {
   let table = document.getElementById("table-body");
 
   /* CREATE OF FIELD AND NEW LINE INSIDE OF TABLE FOR NEW PASSWORDS */
@@ -115,7 +115,7 @@ function addNewPassword(data){
 
 
   /* ADD OF NEW LINE INSIDE OF THE TABLE */
-  for (i = 0; i < 7; i++){
+  for (i = 0; i < 7; i++) {
     let field = document.createElement('th');
     field.scope = 'col';
     line.appendChild(field);
