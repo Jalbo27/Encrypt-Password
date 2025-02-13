@@ -20,6 +20,8 @@ class Engine:
         self.username = ""
         self.password = ""
         self.uri = ""
+        self.__account = Account()
+        self.__security = Secure()
         
     ### Stringify the class
     def __str__(self):

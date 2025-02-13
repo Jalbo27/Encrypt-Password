@@ -1,33 +1,31 @@
 import sqlite3
-from flask import current_app as app, g
 
 class DataBase:
     __db = None
-    
-    ###
-    def __get_db(self):
-        with app.app_context():    
-            if 'db' not in g:
-                g.db = sqlite3.connect(
-                    app.config['DATABASE'],
-                    detect_types=sqlite3.PARSE_DECLTYPES
-                )
-                g.db.row_factory = sqlite3.Row
-
-        return g.db
+    __con = None     
 
     ###
     def __init__(self):
         self.initDB()
     
     ###
-    def initDB(self):
-        self.__db = self.__get_db()
-        
-        with current_app.open_resource("./sql/schema.sql") as f:
-            self.__db.executescript(f.read().decode('utf8'))
-            
+    def initDB(self):   
+        self.__con = sqlite3.connect("account.db")
+        self.__db = self.__con.cursor()
+        file = open('./sql/schema.sql', 'r')
+        sqlfile = file.read()
+        file.close()
+        commands = sqlfile.split(';')
+        for command in commands:
+            try:    
+                self.__db.execute(command)
+            except Exception as msg:
+                print('Command not executed', msg)
+
     ###
     def makeQuery(self, query) -> bool:
         if(self.__db != None and query != ''):
-            self.__db.executescript(query)
+            try:    
+                self.__db.execute(query)
+            except Exception as msg:
+                print('Command not executed', msg)

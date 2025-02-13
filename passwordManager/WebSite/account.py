@@ -6,7 +6,7 @@ class Account:
 
     ###
     def __init__(self):
-        pass
+        self.__db = DataBase()
     
     ###
     def __listUsers(self):
