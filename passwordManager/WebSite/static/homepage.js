@@ -1,6 +1,6 @@
 let container = {};
 
-window.onload = () => {
+document.onload = () => {
   /**
    * CONTROLLO LATO BACKEND DEI DATI INSERITI DALL'UTENTE E AGGIUNTA IN TABELLA DEI NUOVI CAMPI
    */

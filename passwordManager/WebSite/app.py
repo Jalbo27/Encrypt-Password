@@ -1,11 +1,7 @@
-#import sys, os 
-#sys.path.insert(0, os.getcwd()+"/.venv/lib/") 
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
-#from flask_json import FlaskJSON, json_response, JsonError
 from engine import Engine
 from markupsafe import escape
 import db
-#import json
 
 app = Flask(__name__)
 
@@ -36,19 +32,21 @@ def uploadPassword():
     else:
         return render_template("homepage.html/")
 
-
+### LOADS LOGIN PAGE --- METHOD = 'GET'
 @app.route("/login", methods=['GET'])
 def loginPage():
+    print("I\'m inside loginPage function")    
     return render_template("login.html") 
 
-
+### CREATE OR LOGIN AN ACCOUNT --- METHOD = 'POST'
 @app.route("/login", methods=['POST'])
 def login():
+    print("I\'m inside login function")
     if(request.get_json() != None):
         username = request.get_json()['username']
         password = request.get_json()['password']
         if responder.account(username, password, False):
-            return render_template("homepage.html/", account=username)
+            return jsonify(render_template("homepage.html/", account=username))
         else:
             response = {'login': 'failed'}
             return jsonify(response)
