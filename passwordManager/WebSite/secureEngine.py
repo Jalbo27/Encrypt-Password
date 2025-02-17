@@ -19,3 +19,11 @@ class Secure:
             return True
         else:
             return False
+    
+    ### Check possible injection inside the field (SQL, PHP, JS, HTML(...))
+    def checkInjection(self, field):
+        pass
+
+    ### Ensure that password and username (if needed) are secured 
+    def makeSecure(self, password, username=None):
+        pass

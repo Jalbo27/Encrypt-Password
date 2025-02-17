@@ -15,7 +15,7 @@ window.onload = () => {
         console.log("I\'m sending data to backend!");
         let response = await sendForm({ url }, username, password);
         if(response['code'] == 200)
-          return;
+          window.location = url.replace('login', (response['url'] + `${username}`))
       }
     } catch (error) {
       console.log(error);

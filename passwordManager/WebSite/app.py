@@ -1,23 +1,22 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from engine import Engine
 from markupsafe import escape
-import db
-import json
 
 app = Flask(__name__)
 
 responder = Engine()
 password_dict = []
 
+### 
 @app.route("/")
 @app.route("/homepage/")
 @app.route("/homepage/<string:name>")
 def home_page(name=''):
     return render_template("homepage.html", account=escape(name), id=len(password_dict)) 
 
-
-@app.route("/homepage/", methods=['POST'])
-def uploadPassword():
+### Upload the password 
+@app.route("/homepage/<string:name>", methods=['POST'])
+def uploadPassword(name=''):
     if(request.is_json):
         password_dict.append(request.get_json())
         print('i\'m here', password_dict)
@@ -25,17 +24,18 @@ def uploadPassword():
         username = password_dict[-1]['username']
         password = password_dict[-1]['password']
         uri = password_dict[-1]['uri']
-        if responder.sanityPassword(name, username, password, uri):
+        if (responder.sanityPassword(name, username, password, uri)):
             print('i\'m here inside sanity password function')
+            responder.addPassword(name, password_dict)
             print('response sent')
+            password_dict[-1]['id'] += 1
             return jsonify(password_dict[-1])
         else:
             return render_template("homepage.html/")
-    # else:
-    #     print(request.headers)
-    #     print("It is not a json media type")
-    #     return render_template("homepage.html/")
-    return jsonify(request)
+    else:
+        print(request.headers)
+        print("It is not a json media type")
+        return jsonify(request)
     
 ### LOADS LOGIN PAGE --- METHOD = 'GET'
 @app.route("/login", methods=['GET'])
@@ -76,12 +76,12 @@ def login():
 def register():
     pass
     
-
+###
 @app.route("/logout")
 def logoutPage():
     return render_template("logout.html/")
 
-
+###
 @app.errorhandler(404)
 def not_found(error):
     resp = make_response(render_template('error.html'), 404)

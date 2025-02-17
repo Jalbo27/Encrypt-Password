@@ -13,8 +13,12 @@ window.onload = () => {
     const username = document.getElementsByName("username-control")[0].value;
     const password = document.getElementsByName("password-control")[0].value;
     const uri = document.getElementsByName("uri-control")[0].value;
+    const number = -1;
+    if(document.getElementById('id').value != null)
+      number = document.getElementById('id').value
+
     container = {
-      id: 0,
+      id: number,
       name: name_pass,
       username: username,
       password: password,
@@ -123,9 +127,13 @@ function addNewPassword(data) {
     line.appendChild(field);
   }
 
+  /**
+   * ADD OF CONTENT SENT BY BACKEND TO THE FIELDS OF THE NEW LIÌNE
+   */
   console.log(line);
   line.childNodes[0].textContent = data['id'];
   line.childNodes[0].classList.add("col-1");
+  line.childNodes[0].set
   line.childNodes[5].classList.add("col-1");
   line.childNodes[6].classList.add("col-1");
   line.childNodes[1].textContent = data['name'];

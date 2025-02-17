@@ -1,5 +1,6 @@
 from account import Account
 from secureEngine import Secure
+from db import DataBase
 
 class Engine:
     
@@ -36,7 +37,13 @@ class Engine:
         
     ###     
     def account(self, name, password, is_new):
+        self.__security.checkInjection(name)
+        self.__security.checkInjection(password)
         if(is_new):
             return self.__account.createAccount(name, password)
         else:
             return self.__account.loginAccount(name, password)
+        
+    ###
+    def addPassword(self, username: str, line_password: list) -> bool:
+        self.__account.addPassswordAccount(username, line_password)

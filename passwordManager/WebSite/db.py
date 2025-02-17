@@ -21,11 +21,19 @@ class DataBase:
                 self.__db.execute(command)
             except Exception as msg:
                 print('Command not executed', msg)
+        self.__con.close()
 
     ###
     def makeQuery(self, query) -> bool:
+        self.__con = sqlite3.connect("account.db")
+        self.__db = self.__con.cursor()
         if(self.__db != None and query != ''):
-            try:    
+            try:
                 self.__db.execute(query)
+                self.__con.commit()
+                print(self.__db.fetchall())
+                return True
             except Exception as msg:
                 print('Command not executed', msg)
+                return False
+        return False
