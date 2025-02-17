@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from engine import Engine
 from markupsafe import escape
 import db
+import json
 
 app = Flask(__name__)
 
@@ -17,21 +18,25 @@ def home_page(name=''):
 
 @app.route("/homepage/", methods=['POST'])
 def uploadPassword():
-    password_dict.append(request.get_json())
-    print('i\'m here', password_dict)
-    #id += 1
-    #password_dict[-1]['id'] = id
-    name = password_dict[-1]['name']
-    username = password_dict[-1]['username']
-    password = password_dict[-1]['password']
-    uri = password_dict[-1]['uri']
-    if responder.sanityPassword(name, username, password, uri):
-        print('i\'m here inside sanity password function')
-        print('response sent')
-        return jsonify(password_dict[-1])
-    else:
-        return render_template("homepage.html/")
-
+    if(request.is_json):
+        password_dict.append(request.get_json())
+        print('i\'m here', password_dict)
+        name = password_dict[-1]['name']
+        username = password_dict[-1]['username']
+        password = password_dict[-1]['password']
+        uri = password_dict[-1]['uri']
+        if responder.sanityPassword(name, username, password, uri):
+            print('i\'m here inside sanity password function')
+            print('response sent')
+            return jsonify(password_dict[-1])
+        else:
+            return render_template("homepage.html/")
+    # else:
+    #     print(request.headers)
+    #     print("It is not a json media type")
+    #     return render_template("homepage.html/")
+    return jsonify(request)
+    
 ### LOADS LOGIN PAGE --- METHOD = 'GET'
 @app.route("/login", methods=['GET'])
 def loginPage():
@@ -42,16 +47,31 @@ def loginPage():
 @app.route("/login", methods=['POST'])
 def login():
     print("I\'m inside login function")
-    if(request.get_json() != None):
-        username = request.get_json()['username']
-        password = request.get_json()['password']
-        if responder.account(username, password, False):
-            return jsonify(render_template("homepage.html/", account=username))
-        else:
-            response = {'login': 'failed'}
-            return jsonify(response)
-    
-
+    if (request.is_json):
+        print(request.get_json())
+        try:
+            if(request.get_json() != None):
+                username = request.get_json()['username']
+                password = request.get_json()['password']
+                if responder.account(username, password, True):
+                    print("User created")
+                    return jsonify({"code": 200, "url": f"/homepage/"})
+                    #return redirect(url_for(home_page, name=username), code=302)
+                else:
+                    print("Login failed")
+                    response = {'login': 'failed'}
+                    return jsonify(response)
+            else:
+                print("Failed request")
+                return render_template("login.html", check=False)
+        except Exception as error:
+            print(error)
+            return render_template("login.html", check=False)
+    else:
+        print("It is not a json media type")
+        return render_template("login.html", check=False)
+            
+###
 @app.route("/register")
 def register():
     pass

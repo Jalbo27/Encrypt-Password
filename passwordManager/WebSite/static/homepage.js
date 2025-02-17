@@ -1,14 +1,14 @@
 let container = {};
 
-document.onload = () => {
+window.onload = () => {
   /**
    * CONTROLLO LATO BACKEND DEI DATI INSERITI DALL'UTENTE E AGGIUNTA IN TABELLA DEI NUOVI CAMPI
    */
   const form = document.getElementById("form");
-  form.addEventListener("submit", async (event) => {
+  form.addEventListener("submit",  async (event) => {
     event.preventDefault();
-    const myModal = document.getElementById('submitModal');
-    const myInput = document.getElementById('submitBtn');
+    //const myModal = document.getElementById('submitModal');
+    //const myInput = document.getElementById('submitBtn');
     const name_pass = document.getElementsByName("name-control")[0].value;
     const username = document.getElementsByName("username-control")[0].value;
     const password = document.getElementsByName("password-control")[0].value;
@@ -26,7 +26,8 @@ document.onload = () => {
     console.log('password: ' + container.password);
     console.log('uri: ' + container.uri);
     console.log(container);
-    console.log('I\'m under submit event')
+    console.log('I\'m under submit event');
+
     try {
       if (name_pass != '' && username != '' && password != '' && uri != '') {
         const url = "http://127.0.0.1:5000/homepage/";
@@ -38,15 +39,15 @@ document.onload = () => {
         password.value = '';
         uri.value = '';
 
-        myModal.addEventListener('shown.bs.modal', () => {
-          myInput.focus()
-        })
+        // myModal.addEventListener('shown.bs.modal', () => {
+        //   myInput.focus()
+        // })
       }
       else {
         console.log('error');
-        myModal.addEventListener('shown.bs.modal', () => {
-          myInput.focus()
-        })
+        // myModal.addEventListener('shown.bs.modal', () => {
+        //   myInput.focus()
+        // })
       }
     } catch (error) {
       console.error(error);
@@ -76,7 +77,7 @@ async function sendForm({ url }) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
+      "Accept-Post": "application/json"
     },
     body: JSON.stringify(container)
   }).then(response => {
@@ -86,6 +87,7 @@ async function sendForm({ url }) {
     }
     else {
       return response.json().then(value => {
+        console.log(value)
         return value;
       });
     }
