@@ -10,14 +10,18 @@ password_dict = []
 ### 
 @app.route("/")
 @app.route("/homepage/")
-@app.route("/homepage/<string:name>")
-def home_page(name=''):
-    return render_template("homepage.html", account=escape(name), id=len(password_dict)) 
+@app.route("/homepage/<string:account>", methods=['GET'])
+def home_page(account=''):
+    return render_template("homepage.html", account=escape(account), id=len(password_dict)) 
 
 ### Upload the password 
-@app.route("/homepage/<string:name>", methods=['POST'])
-def uploadPassword(name=''):
+@app.route("/homepage/<string:account>", methods=['POST'])
+@app.route("/homepage/", methods=['POST'])
+def uploadPassword(account=''):
     if(request.is_json):
+        if(account == ''):
+            return jsonify({'status': 'failed', 'message': 'You have not an account. You have to login before'})
+        
         password_dict.append(request.get_json())
         print('i\'m here', password_dict)
         name = password_dict[-1]['name']
@@ -26,12 +30,13 @@ def uploadPassword(name=''):
         uri = password_dict[-1]['uri']
         if (responder.sanityPassword(name, username, password, uri)):
             print('i\'m here inside sanity password function')
-            responder.addPassword(name, password_dict)
+            #responder.addPassword(account, password_dict)
             print('response sent')
             password_dict[-1]['id'] += 1
+            password_dict[-1]['status'] = 'Ok'
             return jsonify(password_dict[-1])
         else:
-            return render_template("homepage.html/")
+            return jsonify({'status': 'failed', 'message': 'failed to load password or there are problems in some fields'})
     else:
         print(request.headers)
         print("It is not a json media type")
@@ -72,10 +77,15 @@ def login():
         return render_template("login.html", check=False)
             
 ###
-@app.route("/register")
+@app.route("/register", methods=['GET'])
+def registerPage():
+    return render_template("register.html")
+    
+ ###
+@app.route("/register", methods=['POST'])
 def register():
     pass
-    
+       
 ###
 @app.route("/logout")
 def logoutPage():

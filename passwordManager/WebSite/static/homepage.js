@@ -13,9 +13,11 @@ window.onload = () => {
     const username = document.getElementsByName("username-control")[0].value;
     const password = document.getElementsByName("password-control")[0].value;
     const uri = document.getElementsByName("uri-control")[0].value;
-    const number = -1;
-    if(document.getElementById('id').value != null)
-      number = document.getElementById('id').value
+    let number = -1;
+    if(document.getElementById('table-body').childNodes.length >= 2)
+      number = parseInt(document.getElementById('table-body').lastChild.childNodes[0].textContent);
+    else
+      number = -1;
 
     container = {
       id: number,
@@ -37,7 +39,14 @@ window.onload = () => {
         const url = "http://127.0.0.1:5000/homepage/";
         let responseData = await sendForm({ url });
         console.log(responseData);
-        addNewPassword(responseData);
+        if(responseData['status'] == 'Ok')
+          addNewPassword(responseData);
+        else{
+        // myModal.addEventListener('shown.bs.modal', () => {
+        //   myInput.focus()
+        // })
+        }
+          
         name_pass.value = '';
         username.value = '';
         password.value = '';
@@ -133,7 +142,6 @@ function addNewPassword(data) {
   console.log(line);
   line.childNodes[0].textContent = data['id'];
   line.childNodes[0].classList.add("col-1");
-  line.childNodes[0].set
   line.childNodes[5].classList.add("col-1");
   line.childNodes[6].classList.add("col-1");
   line.childNodes[1].textContent = data['name'];
