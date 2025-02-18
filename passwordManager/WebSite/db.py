@@ -39,18 +39,25 @@ class DataBase:
         self.__db = self.__con.cursor()
         count_users = self.__db.execute("SELECT COUNT(id) FROM User").fetchall()
         count_pass = self.__db.execute("SELECT COUNT(id) FROM Password").fetchall()
-        print("id user n°: {0}\nid pass n°: {1}".format(count_users, count_pass))
+        #print("id user n°: {0}\nid pass n°: {1}".format(count_users, count_pass))
         if(self.__db != None):
             try:
+                cur = None
+                result = []
                 for query in queries:
                     print(currentLine("db"), query)
                     if(query != ''):
-                        cur = self.__db.execute(query).fetchall()
-                        print(currentLine("db"), "cur: ", cur)
-                        self.__con.commit()
-
-                result = self.__db.execute("SELECT * FROM User;").fetchall()
-                print(currentLine("db"), result)
+                        cur = self.__db.execute(query)
+                        cur.commit()
+                        if(cur.fetchone() != None):
+                            #self.__con.close()
+                            return cur.fetchall()
+                        
+                if(self.__db.execute("SELECT COUNT(id) FROM User").fetchall() > count_users):
+                    result = self.__db.execute("SELECT * FROM User").fetchall()[0 - cur.lastrowid]
+                elif (self.__db.execute("SELECT COUNT(id) FROM Password").fetchall() > count_pass):
+                    result = self.__db.execute("SELECT * FROM Password").fetchall()[0 - cur.lastrowid]
+                    
                 self.__con.close()
                 return result
             except Exception as msg:

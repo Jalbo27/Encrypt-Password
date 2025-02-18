@@ -10,18 +10,18 @@ class Account:
     ### List all users authenticated on the web page
     def __listUsers(self):
         query = "SELECT * FROM User;"
-        self.__db.makeQuery(query)
+        print(self.__db.makeQuery(query))
 
     ### List all passwords saved on the web page
     def __listPasswords(self):
         query = "SELECT * FROM Password;"
-        self.__db.makeQuery(query)
+        print(self.__db.makeQuery(query))
 
         
     ### Create a new account and add to db
     def createAccount(self, username, password) -> bool:
         query = f"INSERT INTO User (username, password) VALUES(\'{username}\', \'{password}\');"
-        if (self.__db.makeQuery(query, query, query) != []):
+        if (self.__db.makeQuery(query) != []):
             self.__listUsers()
             return True
         
@@ -49,7 +49,7 @@ class Account:
                         \'{password_line['password']}\',\
                         \'{password_line['uri']}\',\
                         \'{id_user}\');"
-        if(self.__db.makeQuery(query)):
+        if(self.__db.makeQuery(query) != []):
             self.__listPasswords()
             return True
         
