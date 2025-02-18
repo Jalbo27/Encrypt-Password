@@ -18,22 +18,36 @@ class DataBase:
         commands = sqlfile.split(';')
         for command in commands:
             try:    
-                self.__db.execute(command)
+                if(command != ''):
+                    print("[db.py] 22:", command)
+                    self.__db.execute(command)
             except Exception as msg:
-                print('Command not executed', msg)
-        self.__con.close()
+                print('[db.py] 25: Command not executed', msg)
+        
+        cur = self.__db.execute("SELECT * FROM User;")
+        for row in cur.fetchall():
+            print(row)
 
-    ###
-    def makeQuery(self, query) -> bool:
+        print("[db.py] 31: database created")
+        self.__con.close()
+    
+    ### GET PARAMETERS FROM QUERY 
+    def makeQuery(self, *queries) -> list:
         self.__con = sqlite3.connect("account.db")
         self.__db = self.__con.cursor()
-        if(self.__db != None and query != ''):
+        if(self.__db != None):
             try:
-                self.__db.execute(query)
-                self.__con.commit()
-                print(self.__db.fetchall())
-                return True
+                for query in queries:
+                    print("[db.py] 41: QUERY:", query)
+                    if(query != ''):
+                        self.__db.execute(query)
+                        self.__con.commit()
+
+                result = self.__db.execute("SELECT * FROM User;").fetchall()
+                print("[db.py] 50", result)
+                self.__con.close()
+                return result
             except Exception as msg:
-                print('Command not executed', msg)
-                return False
-        return False
+                print('[db.py] 54: Command not executed', msg)
+                return []
+        return []

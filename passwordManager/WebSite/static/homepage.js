@@ -36,7 +36,7 @@ window.onload = () => {
 
     try {
       if (name_pass != '' && username != '' && password != '' && uri != '') {
-        const url = "http://127.0.0.1:5000/homepage/";
+        const url = window.location.href;
         let responseData = await sendForm({ url });
         console.log(responseData);
         if(responseData['status'] == 'Ok')
@@ -66,6 +66,8 @@ window.onload = () => {
       console.error(error);
     }
   });
+
+  const delBtn = document.getElementById("")
 }
 
 /**

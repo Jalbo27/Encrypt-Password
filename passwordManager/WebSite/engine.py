@@ -5,8 +5,8 @@ from db import DataBase
 class Engine:
     
     ### Private Account and Security variables
-    __account = Account()
-    __security = Secure()
+    __account = None
+    __security = None
         
     ###
     def __init__(self, name, username, password, uri):
