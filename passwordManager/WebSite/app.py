@@ -8,14 +8,14 @@ app = Flask(__name__)
 responder = Engine()
 password_dict = []
 
-### 
+### LOADS HOMEPAGE PAGE --- METHOD = 'GET'
 @app.route("/")
 @app.route("/homepage/")
 @app.route("/homepage/<string:account>", methods=['GET'])
 def home_page(account=''):
     return render_template("homepage.html", account=escape(account), id=len(password_dict)) 
 
-### Upload the password 
+### UPLOAD THE PASSWORD INTO TABLE
 @app.route("/homepage/", methods=['POST'])
 @app.route("/homepage/<string:account>", methods=['POST'])
 def uploadPassword(account=''):
@@ -32,11 +32,14 @@ def uploadPassword(account=''):
         uri = password_dict[-1]['uri']
         if (responder.sanityPassword(name, username, password, uri)):
             print(currentLine("app")," I\'m here password sanity check passed successfully")
-            responder.addPassword(account, password_dict[-1])
-            print(currentLine("app"), 'response sent')
-            password_dict[-1]['id'] += 1
-            password_dict[-1]['status'] = 'Ok'
-            return jsonify(password_dict[-1])
+            if(responder.addPassword(account, password_dict[-1])):
+                print(currentLine("app"), 'password added')
+                print(currentLine("app"), 'response sent')
+                password_dict[-1]['id'] += 1
+                password_dict[-1]['status'] = 'Ok'
+                return jsonify(password_dict[-1])
+            else:
+                return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
         else:
             return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
     else:
@@ -93,7 +96,7 @@ def register():
 def logoutPage():
     return render_template("logout.html/")
 
-###
+### HANDLE OF STATUS CODE OF ERROR (400 AND 500)
 @app.errorhandler(404)
 def not_found(error):
     resp = make_response(render_template('error.html'), 404)

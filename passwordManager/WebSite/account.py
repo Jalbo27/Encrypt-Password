@@ -48,7 +48,7 @@ class Account:
                         \'{password_line['username']}\',\
                         \'{password_line['password']}\',\
                         \'{password_line['uri']}\',\
-                        \'{id_user}\');"
+                        \'{id_user[0]}\');"
         if(self.__db.makeQuery(query) != []):
             self.__listPasswords()
             return True

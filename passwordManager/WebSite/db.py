@@ -36,10 +36,10 @@ class DataBase:
     ### GET PARAMETERS FROM QUERY 
     def makeQuery(self, *queries) -> list:
         self.__con = sqlite3.connect("account.db")
+        self.__con.autocommit = True
         self.__db = self.__con.cursor()
         count_users = self.__db.execute("SELECT COUNT(id) FROM User").fetchall()
         count_pass = self.__db.execute("SELECT COUNT(id) FROM Password").fetchall()
-        #print("id user n°: {0}\nid pass n°: {1}".format(count_users, count_pass))
         if(self.__db != None):
             try:
                 cur = None
@@ -48,14 +48,16 @@ class DataBase:
                     print(currentLine("db"), query)
                     if(query != ''):
                         cur = self.__db.execute(query)
-                        cur.commit()
-                        if(cur.fetchone() != None):
-                            #self.__con.close()
-                            return cur.fetchall()
+                        result = cur.fetchall()
+                        if(result != []):
+                            self.__con.close()
+                            return result
                         
                 if(self.__db.execute("SELECT COUNT(id) FROM User").fetchall() > count_users):
+                    print(currentLine("db"), " current users: ", self.__db.execute("SELECT COUNT(id) FROM User").fetchall())
                     result = self.__db.execute("SELECT * FROM User").fetchall()[0 - cur.lastrowid]
                 elif (self.__db.execute("SELECT COUNT(id) FROM Password").fetchall() > count_pass):
+                    print(currentLine("db"), " current password: ", self.__db.execute("SELECT COUNT(id) FROM Password").fetchall())
                     result = self.__db.execute("SELECT * FROM Password").fetchall()[0 - cur.lastrowid]
                     
                 self.__con.close()

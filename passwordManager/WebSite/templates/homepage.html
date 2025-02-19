@@ -73,7 +73,22 @@
       <label for="floatingInput">URI:\\</label>
     </div>
     <div class="col-auto form-floating">
-      <button type="submit" class="btn btn-success btn-lg" id="submitBtn">Submit</button>
+      <input type="submit" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#exampleModal" value="Submit" id="submitBtn"></input>
+    </div>
+    <div class="modal fade" id="Modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="modalTitle"></h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="modalBody">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Ok</button>
+          </div>
+        </div>
+      </div>
     </div>
   </form>
   <form>

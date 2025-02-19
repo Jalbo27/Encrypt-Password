@@ -7,8 +7,6 @@ window.onload = () => {
   const form = document.getElementById("form");
   form.addEventListener("submit",  async (event) => {
     event.preventDefault();
-    //const myModal = document.getElementById('submitModal');
-    //const myInput = document.getElementById('submitBtn');
     const name_pass = document.getElementsByName("name-control")[0].value;
     const username = document.getElementsByName("username-control")[0].value;
     const password = document.getElementsByName("password-control")[0].value;
@@ -39,22 +37,20 @@ window.onload = () => {
         const url = window.location.href;
         let responseData = await sendForm({ url });
         console.log(responseData);
-        if(responseData['status'] == 'Ok')
+        if(responseData['status'] == 'Ok'){
           addNewPassword(responseData);
-        else{
-        // myModal.addEventListener('shown.bs.modal', () => {
-        //   myInput.focus()
-        // })
         }
-          
-        name_pass.value = '';
-        username.value = '';
-        password.value = '';
-        uri.value = '';
+        else{
+          let modalTitle = document.getElementById("modalTitle").value;
+          let modalBody = document.getElementById("modalBody").value;
+          let inputBtn = document.getElementById("submitBtn");
+          let modal = document.getElementById("Modal");
+          modalTitle = "Password not added!"
+          modalBody = "Password is not added to the table and database internally"
+        
+          inputBtn.click(() => {});
 
-        // myModal.addEventListener('shown.bs.modal', () => {
-        //   myInput.focus()
-        // })
+        }
       }
       else {
         console.log('error');

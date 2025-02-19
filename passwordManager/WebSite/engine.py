@@ -45,4 +45,4 @@ class Engine:
         
     ### Call account class to store a new password
     def addPassword(self, username: str, line_password: list) -> bool:
-        self.__account.addPassswordAccount(username, line_password)
+        return self.__account.addPassswordAccount(username, line_password)
