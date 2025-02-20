@@ -1,3 +1,5 @@
+//import { Modal } from "../static/bootstrap/js/bootstrap";
+
 let container = {};
 
 window.onload = () => {
@@ -41,22 +43,10 @@ window.onload = () => {
           addNewPassword(responseData);
         }
         else{
-          let modalTitle = document.getElementById("modalTitle").value;
-          let modalBody = document.getElementById("modalBody").value;
-          let inputBtn = document.getElementById("submitBtn");
-          let modal = document.getElementById("Modal");
-          modalTitle = "Password not added!"
-          modalBody = "Password is not added to the table and database internally"
-        
-          inputBtn.click(() => {});
-
         }
       }
       else {
         console.log('error');
-        // myModal.addEventListener('shown.bs.modal', () => {
-        //   myInput.focus()
-        // })
       }
     } catch (error) {
       console.error(error);

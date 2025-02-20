@@ -20,8 +20,9 @@ class Account:
         
     ### Create a new account and add to db
     def createAccount(self, username, password) -> bool:
-        query = f"INSERT INTO User (username, password) VALUES(\'{username}\', \'{password}\');"
-        if (self.__db.makeQuery(query) != []):
+        query_user = f"INSERT INTO User (username, password) VALUES(\'{username}\', \'{password}\');"
+        query_pass_table = f"CREATE TABLE \"Password_{username}\" (\"id\" INTEGER PRIMARY KEY NOT NULL, \"name\" TEXT NOT NULL, \"username\" TEXT NOT NULL, \"password\" TEXT NOT NULL, \"uri\" TEXT NOT NULL, \"id_user\" INTEGER NOT NULL, FOREIGN KEY (\"id_user\") REFERENCES User(\"id\"));"
+        if (self.__db.makeQuery(query_user, query_pass_table) != []):
             self.__listUsers()
             return True
         
@@ -43,7 +44,7 @@ class Account:
     ### Add a new password to database based by user id
     def addPassswordAccount(self, username: str, password_line: dict) -> bool:
         id_user = self.__db.makeQuery(f"SELECT id FROM User WHERE username = \'{username}\';")
-        query = f"INSERT INTO Password(name, username, password, uri, id_user) \
+        query = f"INSERT INTO Password_{username}(name, username, password, uri, id_user) \
                 VALUES (\'{password_line['name']}\',\
                         \'{password_line['username']}\',\
                         \'{password_line['password']}\',\
