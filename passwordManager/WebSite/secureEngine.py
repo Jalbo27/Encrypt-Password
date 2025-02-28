@@ -1,8 +1,8 @@
 import re
 
 class Secure:
-    __translation_table = str.maketrans("","","<>-- #")
-    __translation_pass = str.maketrans("", "", "<>--#")
+    __translation_table = str.maketrans("","","<>-- #<")
+    __translation_pass = str.maketrans("", "", "<>--#<")
     
     def __init__(self):
         pass
@@ -10,10 +10,14 @@ class Secure:
     ### Ensure password and others fields are corrects
     def passwordValidation(self, name: str, username: str, password: str, uri: str):
         cpname = name.translate(self.__translation_table)
-        cpusername = username.translate(username)
+        cpusername = username.translate(self.__translation_table)
         cppassword = password.translate(self.__translation_pass)
         cpuri = uri.translate(self.__translation_table)
         is_match = re.fullmatch(r'[A-Za-z0-9#$%^&+=]{8,}', password)
+        # print(f"cpname - name:          {cpname} - {name}")
+        # print(f"cpusername - username:  {cpusername} - {username}")
+        # print(f"cppassword - password:  {cppassword} - {password}")
+        # print(f"cpuri - uri:            {cpuri} - {uri}")
         
         if(cpname == name and cpusername == username and cppassword == password and cpuri == uri and is_match is not None):
             return True
