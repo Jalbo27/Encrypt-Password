@@ -1,9 +1,44 @@
 from flask import Flask, render_template, request, make_response, jsonify
+import logging
+import socket
+from flask.logging import default_handler
+from logging.config import dictConfig
+from logging.handlers import SMTPHandler
 from engine import Engine
 from markupsafe import escape
 from __inspection__ import currentLine
 
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
+
+ip = socket.gethostbyname(socket.gethostname())
+
+mail_handler = SMTPHandler(
+    mailhost=ip,
+    fromaddr='passwordmanager.tracker@gmail.com',
+    toaddrs=['alberto.lorenzini2004@gmail.com'],
+    subject='Application Error'
+)
+mail_handler.setLevel(logging.ERROR)
+mail_handler.setFormatter(logging.Formatter(
+    '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+))
+
 app = Flask(__name__)
+app.logger.removeHandler(default_handler)
 
 responder = Engine()
 password_dict = []
@@ -32,11 +67,13 @@ def uploadPassword(account=''):
         uri = password_dict[-1]['uri']
         if (responder.sanityPassword(name, username, password, uri)):
             print(currentLine("app")," I\'m here password sanity check passed successfully")
+            password_dict[-1]['id'] += 1
             if(responder.addPassword(account, password_dict[-1])):
                 print(currentLine("app"), 'password added')
                 print(currentLine("app"), 'response sent')
-                password_dict[-1]['id'] += 1
                 password_dict[-1]['status'] = 'Ok'
+                print(password_dict[-1])
+                del password_dict[-1]['_id']
                 return jsonify(password_dict[-1])
             else:
                 return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})

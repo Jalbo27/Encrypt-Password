@@ -1,8 +1,6 @@
-from flask import Flask
-from numpy import insert
+#from flask import Flask
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
-#import sqlite3
 from urllib.parse import quote_plus
 from __inspection__ import currentLine
 
@@ -11,17 +9,13 @@ class DataBase:
     __username = None
     __password = None
     __cluster = None
-    # __uri = None 
-    # __client = None
-    # __con = None
-    # __db = None
     
-    ###
+    ### Call the initilizator of class
     def __init__(self):
         self.initDB()
         
     
-    ###
+    ### Initializa the Database class 
     def initDB(self): 
         # self.__con = sqlite3.connect("account.db")
         # self.__db = self.__con.cursor()
@@ -48,7 +42,6 @@ class DataBase:
         self.__password = quote_plus('PzwX6aZW4gbhTnh')
         self.__cluster = 'pmcluster' 
         uri = f"mongodb+srv://{self.__username}:{self.__password}@{self.__cluster}.blpv7.mongodb.net/?retryWrites=true&w=majority&appName={self.__cluster}"
-        print(currentLine("db"), "database created")
         client = MongoClient(uri, server_api=ServerApi(version="1", strict=True, deprecation_errors=True))
         # Send a ping to confirm a successful connection
         try:
@@ -84,20 +77,28 @@ class DataBase:
             print("Connection opened")
             database = client["passwordManager"] 
             
+            ### User is doing a query in password tables
             if fields[0] == "User":
                 database["User"].insert_many(fields[1:])
                 return True
+            ### User is doing a query in password tables
             elif fields[0] == "Password":
-                id_user = database["User"].find(fields[1])
-                print(currentLine('db'), "id: ", id_user._id)
-                #result = database.get_collection(f"Password_{id_user.}")
-                # if result.cursor_id != None:
-                #     self.__createCollection(fields[1], client)
-                return True 
-            
-                                    
+                print(currentLine("db"), fields[1])
+                id_user = database["User"].find_one(fields[1])
+                if id_user['_id'] != None:
+                    collect = database.get_collection(f"Password_{id_user['_id']}")
+                    if(collect != None):
+                        result = database[f"Password_{id_user['_id']}"].insert_one(fields[2], True)
+                    else:
+                        self.__createCollection(f"Password_{id_user['_id']}", client)
+                        result = database[f"Password_{id_user['_id']}"].insert_one(fields[2], True)
+                    return True                        
+                ### The specified user does not exist
+                else:
+                    return False
+        ### Connection is not gone well                        
         except Exception as e:
-            print(e)
+            print(currentLine("db"), e)
             return False
         
         # self.__con = sqlite3.connect("account.db")

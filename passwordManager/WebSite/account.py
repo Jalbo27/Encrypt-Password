@@ -13,16 +13,11 @@ class Account:
     
     ### List all users authenticated on the web page
     def __listUsers(self):
-        query = "SELECT * FROM User;"
-        #print(self.__db.makeQuery(query))
-        
+        pass
 
     ### List all passwords saved on the web page
     def __listPasswords(self):
-        query = "SELECT * FROM Password;"
-        #print(self.__db.makeQuery(query))
-        
-
+        pass
         
     ### Create a new account and add to db
     def createAccount(self, username, password) -> bool:
@@ -42,20 +37,9 @@ class Account:
     
     
     ### Add a new password to database and create a new table password based by user account id
-    def addPassswordAccount(self, username: str, password_line: dict) -> bool:
-        # id_user = self.__db.makeQuery(f"SELECT id FROM User WHERE username = \'{username}\';")
-        # query = f"INSERT INTO Password_{username}(name, username, password, uri, id_user) \
-        #         VALUES (\'{password_line['name']}\',\
-        #                 \'{password_line['username']}\',\
-        #                 \'{password_line['password']}\',\
-        #                 \'{password_line['uri']}\',\
-        #                 \'{id_user[0]}\');"
-        if(self.__db.insertFields('Password', {username}, password_line)):
-            self.__listPasswords()
-            return True
-        
-        return False
-    
+    def addPassswordAccount(self, username: str, password_line: list) -> bool:
+        return self.__db.insertFields('Password', {"username": username}, password_line)
+                
     
     ### Delete an existing password from database based by user id
     def deletePasswordAccount(self, username: str, password_line: list) -> bool:

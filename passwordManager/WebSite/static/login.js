@@ -10,11 +10,12 @@ window.onload = () => {
       const username = document.getElementById("user-control").value;
       const password = document.getElementById("password-control").value;
       console.log("username: " + username + "\npassword: " + password);
-      const url = "http://127.0.0.1:5000/login";
+      const url = window.location.href;
       if (username != '' && password != '') {
         console.log("I\'m sending data to backend!");
         let response = await sendForm({ url }, username, password);
         if(response['code'] == 200)
+          console.log(response['url'])
           window.location = url.replace('/login', (response['url'] + `${username}`))
       }
     } catch (error) {

@@ -9,10 +9,10 @@ window.onload = () => {
   const form = document.getElementById("form");
   form.addEventListener("submit",  async (event) => {
     event.preventDefault();
-    const name_pass = document.getElementsByName("name-control")[0].value;
-    const username = document.getElementsByName("username-control")[0].value;
-    const password = document.getElementsByName("password-control")[0].value;
-    const uri = document.getElementsByName("uri-control")[0].value;
+    let name_pass = document.getElementsByName("name-control")[0].value;
+    let username = document.getElementsByName("username-control")[0].value;
+    let password = document.getElementsByName("password-control")[0].value;
+    let uri = document.getElementsByName("uri-control")[0].value;
     let number = -1;
     if(document.getElementById('table-body').childNodes.length >= 2)
       number = parseInt(document.getElementById('table-body').lastChild.childNodes[0].textContent);

@@ -23,18 +23,17 @@ class Engine:
         self.__account = Account()
         self.__security = Secure()
         
+        
     ### Stringify the class
     def __str__(self):
         pass
     
+    
     ### Ensure password and others fields are corrects using class Secure
     def sanityPassword(self, name: str, username: str, password: str, uri: str):
-        if(self.__security.passwordValidation(name, username, password, uri)):
-            return True
-        else:
-            return False
+        return self.__security.passwordValidation(name, username, password, uri)
 
-        
+
     ### Manage login operations (new o log a user)
     def account(self, name, password, is_new):
         self.__security.checkInjection(name)
