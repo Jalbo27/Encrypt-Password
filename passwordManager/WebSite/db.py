@@ -1,4 +1,4 @@
-#from flask import Flask
+from flask import cli
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from urllib.parse import quote_plus
@@ -62,11 +62,32 @@ class DataBase:
         return True
     
     
-    ###
-    def selectOne(self, key: str):
-        pass
-    
-    
+    ### Check if the user exists or not
+    def account(self, user:list, is_new) -> bool:
+        uri = f"mongodb+srv://{self.__username}:{self.__password}@{self.__cluster}.blpv7.mongodb.net/?retryWrites=true&w=majority&appName={self.__cluster}"
+        client = MongoClient(uri, server_api=ServerApi(version="1", strict=True, deprecation_errors=True))
+        result = None
+
+        try:
+            database = client["passwordManager"]
+            
+            if is_new:
+                found = database["User"].find_one(user)
+                if found == None:
+                    print(currentLine("db"), f"Not found user called {user['username']} and subscribe this new user")
+                    result = database["User"].insert_one(user)
+            else:
+                result = database["User"].find_one(user)
+            
+            client.close()
+            return True if result != None else False
+        ### Connection is not gone well                        
+        except Exception as e:
+            print(currentLine("db"), e)
+            client.close()
+            return False
+        
+        
     ### INSERT FIELDS IN ANY TABLE 
     def insertFields(self, *fields) -> bool:
         uri = f"mongodb+srv://{self.__username}:{self.__password}@{self.__cluster}.blpv7.mongodb.net/?retryWrites=true&w=majority&appName={self.__cluster}"
@@ -77,27 +98,24 @@ class DataBase:
             print("Connection opened")
             database = client["passwordManager"] 
             
-            ### User is doing a query in password tables
-            if fields[0] == "User":
-                database["User"].insert_many(fields[1:])
-                return True
-            ### User is doing a query in password tables
-            elif fields[0] == "Password":
-                print(currentLine("db"), fields[1])
-                id_user = database["User"].find_one(fields[1])
-                if id_user['_id'] != None:
-                    collect = database.get_collection(f"Password_{id_user['_id']}")
-                    if(collect != None):
-                        result = database[f"Password_{id_user['_id']}"].insert_one(fields[2], True)
-                    else:
-                        self.__createCollection(f"Password_{id_user['_id']}", client)
-                        result = database[f"Password_{id_user['_id']}"].insert_one(fields[2], True)
-                    return True                        
-                ### The specified user does not exist
+            print(currentLine("db"), fields[0])
+            id_user = database["User"].find_one(fields[0])
+            if id_user['_id'] != None:
+                collect = database.get_collection(f"Password_{id_user['_id']}")
+                if(collect != None):
+                    result = database[f"Password_{id_user['_id']}"].insert_one(fields[1], True)
                 else:
-                    return False
+                    self.__createCollection(f"Password_{id_user['_id']}", client)
+                    result = database[f"Password_{id_user['_id']}"].insert_one(fields[1], True)
+                
+                client.close()
+                return True if result != None else False
+            ### The specified user does not exist
+            else:
+                return False
         ### Connection is not gone well                        
         except Exception as e:
+            client.close()
             print(currentLine("db"), e)
             return False
         

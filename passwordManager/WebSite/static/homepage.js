@@ -1,20 +1,19 @@
-//import { Modal } from "../static/bootstrap/js/bootstrap";
-
 let container = {};
+let url = window.location.href;
 
 window.onload = () => {
   /**
    * CONTROLLO LATO BACKEND DEI DATI INSERITI DALL'UTENTE E AGGIUNTA IN TABELLA DEI NUOVI CAMPI
    */
   const form = document.getElementById("form");
-  form.addEventListener("submit",  async (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     let name_pass = document.getElementsByName("name-control")[0].value;
     let username = document.getElementsByName("username-control")[0].value;
     let password = document.getElementsByName("password-control")[0].value;
     let uri = document.getElementsByName("uri-control")[0].value;
-    let number = -1;
-    if(document.getElementById('table-body').childNodes.length >= 2)
+    let number;
+    if (document.getElementById('table-body').childNodes.length >= 2)
       number = parseInt(document.getElementById('table-body').lastChild.childNodes[0].textContent);
     else
       number = -1;
@@ -36,13 +35,12 @@ window.onload = () => {
 
     try {
       if (name_pass != '' && username != '' && password != '' && uri != '') {
-        const url = window.location.href;
         let responseData = await sendForm({ url });
         console.log(responseData);
-        if(responseData['status'] == 'Ok'){
+        if (responseData['status'] == 'Ok') {
           addNewPassword(responseData);
         }
-        else{
+        else {
         }
       }
       else {
@@ -52,8 +50,6 @@ window.onload = () => {
       console.error(error);
     }
   });
-
-  const delBtn = document.getElementById("")
 }
 
 /**
@@ -65,7 +61,7 @@ window.onload = () => {
  * @return {Object} - Response body from URL that was POSTed to
  */
 async function sendForm({ url }) {
-  console.log('I\'m under postFormDataAsJson function')
+  console.log('I\'m under sendForm function');
   /**
    * 
    * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
@@ -97,6 +93,35 @@ async function sendForm({ url }) {
   return response;
 }
 
+/**
+ * 
+ */
+async function manageElement(id, action) {
+  requestAction = {
+    id: id,
+    action: action
+  }
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept-Post": "application/json"
+    },
+    body: JSON.stringify(requestAction)
+  }).then(response => {
+    if (!response.ok) {
+      const errorMessage = response.text();
+      throw new Error(errorMessage);
+    }
+    else {
+      return response.json().then(value => {
+        console.log(value)
+        return value;
+      });
+    }
+  });
+}
+
 function addNewPassword(data) {
   let table = document.getElementById("table-body");
 
@@ -106,15 +131,19 @@ function addNewPassword(data) {
   let editBtn = document.createElement('button');
   let pwdBtn = document.createElement('button');
   let link_uri = document.createElement('a');
-  pwdBtn.style = "border:none;background:none;"
+  pwdBtn.style = "border:none;background:none;";
   link_uri.href = data['uri'];
   link_uri.target = "_blank";
   link_uri.textContent = data['uri'];
   pwdBtn.textContent = "•••••••••••";
   delBtn.classList.add("btn", "btn-danger");
   delBtn.textContent = "DELETE";
-  editBtn.classList.add("btn", "btn-primary")
+  delBtn.setAttribute("id", `delete-${data["id"]}`);
+  delBtn.addEventListener('click', manageElement(data["id"], "delete"));
+  editBtn.classList.add("btn", "btn-primary");
   editBtn.textContent = "EDIT";
+  editBtn.setAttribute("id", `edit-${data["id"]}`);
+  editBtn.addEventListener('click', manageElement(data["id"], "edit"));
 
 
   /* ADD OF NEW LINE INSIDE OF THE TABLE */

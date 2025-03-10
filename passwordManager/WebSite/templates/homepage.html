@@ -42,8 +42,10 @@
             {% endif %}
           </li>
           {% if account %}
-          <li>
+          <li class="nav-item">
             <a class="nav-link" href="{{ url_for('logoutPage')}}">Logout</a>
+            {% else %}
+            <a class="nav-link" href="{{ url_for('register')}}">Subscribe</a>
           </li>
           {% endif %}
         </ul>
