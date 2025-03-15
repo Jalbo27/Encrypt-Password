@@ -1,12 +1,43 @@
 let container = {};
-let url = window.location.href;
 
 window.onload = () => {
   /**
+   * CONTROLLO DELLA LOGIN ESEGUITA DALL'UTENTE
+   */
+  const form_login = document.getElementById("form-login");
+  form_login.addEventListener("submit", async (event) =>{
+    console.log("I\'m inside the addEventListener function!");
+    event.preventDefault();
+    try {
+      const username = document.getElementById("user-control").value;
+      const password = document.getElementById("password-control").value;
+      if (username != '' && password != '') {
+        console.log("I\'m sending data to backend!");
+        const url_login = window.location.href.replace('/homepage/', '/login')
+        console.log(url_login)
+        const account = {
+          username: username,
+          password: password
+        }
+        let response = await sendLogin(url_login, account);
+        if (response['code'] == 200){
+          console.log(response['url'])
+          window.location = url_login.replace('/login', response['url'])
+        }
+        else{
+          alert('Utente inesistente')
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  /**
    * CONTROLLO LATO BACKEND DEI DATI INSERITI DALL'UTENTE E AGGIUNTA IN TABELLA DEI NUOVI CAMPI
    */
-  const form = document.getElementById("form");
-  form.addEventListener("submit", async (event) => {
+  const form_element = document.getElementById("form-element");
+  form_element.addEventListener("submit", async (event) => {
     event.preventDefault();
     let name_pass = document.getElementsByName("name-control")[0].value;
     let username = document.getElementsByName("username-control")[0].value;
@@ -19,6 +50,7 @@ window.onload = () => {
       number = -1;
 
     container = {
+      action: 'submit',
       id: number,
       name: name_pass,
       username: username,
@@ -35,7 +67,8 @@ window.onload = () => {
 
     try {
       if (name_pass != '' && username != '' && password != '' && uri != '') {
-        let responseData = await sendForm({ url });
+        const url = window.location.href;
+        let responseData = await sendForm(url);
         console.log(responseData);
         if (responseData['status'] == 'Ok') {
           addNewPassword(responseData);
@@ -55,12 +88,44 @@ window.onload = () => {
 /**
  * Helper function for POSTing data as JSON with fetch.
  *
- * @param {Object} options
- * @param {string} options.url - URL to POST data to
- * @param {FormData} options.formData - `FormData` instance
+ * @param {FormData} formData - `FormData` instance
  * @return {Object} - Response body from URL that was POSTed to
  */
-async function sendForm({ url }) {
+async function sendLogin(uri, account) {
+  console.log("I\'m inside sendLogin function");
+  console.log(JSON.stringify(account));
+  console.log(typeof(uri));
+  const response = await fetch(uri, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify(account),
+  }).then(response => {
+    if (!response.ok) {
+      const errorMessage = response.text();
+      throw new Error(errorMessage);
+    }
+    else {
+      return response.json().then(value => {
+        console.log(value);
+        return value;
+      });
+    }
+  });
+  return response;
+}
+
+/**
+ * Helper function for POSTing data as JSON with fetch.
+ *
+ * @param {object}
+ * @param {String} options.url
+ * @param {FormData} options 
+ * @return {Object} - Response body from URL that was POSTed to
+ */
+async function sendForm(url) {
   console.log('I\'m under sendForm function');
   /**
    * 
@@ -70,6 +135,7 @@ async function sendForm({ url }) {
    * 
   */
   console.log("JSON FORMAT: \n" + JSON.stringify(container));
+  console.log(url)
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -98,8 +164,8 @@ async function sendForm({ url }) {
  */
 async function manageElement(id, action) {
   requestAction = {
-    id: id,
-    action: action
+    action: action,
+    id: id
   }
   const response = await fetch(url, {
     method: "POST",

@@ -10,13 +10,21 @@ window.onload = () => {
       const username = document.getElementById("user-control").value;
       const password = document.getElementById("password-control").value;
       console.log("username: " + username + "\npassword: " + password);
-      const url = window.location.href;
       if (username != '' && password != '') {
         console.log("I\'m sending data to backend!");
-        let response = await sendForm({ url }, username, password);
-        if(response['code'] == 200)
+        const account = {
+          username: username,
+          password: password
+        }
+        const url = window.location.href;
+        let response = await sendForm(url, account);
+        if (response['code'] == 200){
           console.log(response['url'])
-          window.location = url.replace('/login', (response['url'] + `${username}`))
+          window.location = url.replace('/login', response['url'])
+        }
+        else{
+          alert('Utente inesistente')
+        }
       }
     } catch (error) {
       console.log(error);
@@ -27,21 +35,19 @@ window.onload = () => {
 /**
  * Helper function for POSTing data as JSON with fetch.
  *
- * @param {Object} options
- * @param {string} options.url - URL to POST data to
  * @param {FormData} options.formData - `FormData` instance
  * @return {Object} - Response body from URL that was POSTed to
  */
-async function sendForm({ url }, username, password) {
+async function sendForm(url, account) {
   console.log("I\'m inside sendForm function");
-  console.log(JSON.stringify({ username: username, password: password }));
+  console.log(JSON.stringify(account));
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Accept": "application/json"
     },
-    body: JSON.stringify({ 'username': username, 'password': password }),
+    body: JSON.stringify(account),
   }).then(response => {
     if (!response.ok) {
       const errorMessage = response.text();

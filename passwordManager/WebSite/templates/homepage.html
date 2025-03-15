@@ -38,7 +38,39 @@
             {% if account %}
             <a class="nav-link" href="#">Hello {{ account }}</a>
             {% else %}
-            <a class="nav-link" href="{{ url_for('loginPage')}}">Login</a>
+            <button type="button" class="btn nav-link" data-bs-toggle="modal" data-bs-target="#exampleModal"
+              data-bs-whatever="@mdo" style="border: hidden;">
+              Login
+            </button>
+            <form id="form-login" method="post">
+              <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">Login</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form>
+                        <div class="mb-3">
+                          <label for="recipient-name" class="col-form-label">Username</label>
+                          <input type="text" class="form-control" id="user-control">
+                        </div>
+                        <div class="mb-3">
+                          <label for="message-text" class="col-form-label">Password</label>
+                          <input type="password" class="form-control" id="password-control"></input>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <input type="submit" class="btn btn-primary" value="Login"></input>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
             {% endif %}
           </li>
           {% if account %}
@@ -56,7 +88,7 @@
       </div>
     </div>
   </nav>
-  <form class="row g-3 align-text-top" style="padding-block-start: 3ch; padding-left: 30ch;" id="form" method="post">
+  <form class="row g-3 align-text-top" style="padding-block-start: 3ch; padding-left: 30ch;" id="form-element" method="post">
     <div class="col-1 form-floating">
       <input type="text" class="form-control" id="floatingInput" name="name-control" placeholder="Name">
       <label for="floatingInput">Name</label>
@@ -75,32 +107,30 @@
       <label for="floatingInput">URI:\\</label>
     </div>
     <div class="col-auto form-floating">
-      <input type="submit" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#exampleModal" value="Submit" id="submitBtn"></input>
+      <input type="submit" class="btn btn-success btn-lg" value="Submit" id="submitBtn"></input>
     </div>
   </form>
-  <form>
-    <div class="grid text-center">
-      <table
-        class="table table-striped table-hover table-bordered caption-top border border-rounded-4 border-primary border-4"
-        id="table">
-        <caption>List of passwords</caption>
-        <thead>
-          <tr>
-            <th scope="col" class="col-1">N°</th>
-            <th scope="col" class="col-1">Name</th>
-            <th scope="col" class="col-2">Username</th>
-            <th scope="col">Password</th>
-            <th scope="col">URI:\\</th>
-            <th scoper="col">Edit</th>
-            <th scoper="col">Delete</th>
-          </tr>
-        </thead>
-        <tbody class="table-group-divider" id="table-body">
-        </tbody>
-        <tfoot></tfoot>
-      </table>
-    </div>
-  </form>
+  <div class="grid text-center">
+    <table
+      class="table table-striped table-hover table-bordered caption-top border border-rounded-4 border-primary border-4"
+      id="table">
+      <caption>List of passwords</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="col-1">N°</th>
+          <th scope="col" class="col-1">Name</th>
+          <th scope="col" class="col-2">Username</th>
+          <th scope="col">Password</th>
+          <th scope="col">URI:\\</th>
+          <th scoper="col">Edit</th>
+          <th scoper="col">Delete</th>
+        </tr>
+      </thead>
+      <tbody class="table-group-divider" id="table-body">
+      </tbody>
+      <tfoot></tfoot>
+    </table>
+  </div>
 </body>
 
 </html>

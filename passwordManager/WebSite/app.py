@@ -1,3 +1,4 @@
+from locale import currency
 from flask import Flask, render_template, request, make_response, jsonify
 import logging
 from flask.logging import default_handler
@@ -45,29 +46,37 @@ def home_page(account=''):
 def uploadPassword(account=''):
     if(request.is_json):
         print(currentLine("app"), request.headers)
+        print(currentLine("app"), "il JSON ricevuto è: ", request.get_json())
         if(account == ''):
             return jsonify({'message': 'You have not an account. You have to login before', 'status': 'failed'})
-        
-        password_dict.append(request.get_json())
-        print(currentLine("app"), password_dict)
-        name = password_dict[-1]['name']
-        username = password_dict[-1]['username']
-        password = password_dict[-1]['password']
-        uri = password_dict[-1]['uri']
-        if (responder.sanityPassword(name, username, password, uri)):
-            print(currentLine("app")," I\'m here password sanity check passed successfully")
-            password_dict[-1]['id'] += 1
-            if(responder.addPassword(account, password_dict[-1])):
-                print(currentLine("app"), 'password added')
-                print(currentLine("app"), 'response sent')
-                password_dict[-1]['status'] = 'Ok'
-                print(password_dict[-1])
-                del password_dict[-1]['_id']
-                return jsonify(password_dict[-1])
+        ### CHECK THE ACTION: 'submit', 'delete', 'edit'
+        if(request.get_json()['action'] == 'submit'):
+            password_dict.append(request.get_json())
+            print(currentLine("app"), password_dict)
+            name = password_dict[-1]['name']
+            username = password_dict[-1]['username']
+            password = password_dict[-1]['password']
+            uri = password_dict[-1]['uri']
+            if (responder.sanityPassword(name, username, password, uri)):
+                print(currentLine("app")," I\'m here password sanity check passed successfully")
+                password_dict[-1]['id'] += 1
+                if(responder.addPassword(account, password_dict[-1])):
+                    print(currentLine("app"), 'password added')
+                    print(currentLine("app"), 'response sent')
+                    password_dict[-1]['status'] = 'Ok'
+                    print(password_dict[-1])
+                    del password_dict[-1]['_id']
+                    return jsonify(password_dict[-1])
+                else:
+                    return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
             else:
                 return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
+        elif (request.get_json()['action'] == 'delete'):
+            pass
+        elif (request.get_json()['action'] == 'edit'):
+            pass
         else:
-            return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
+            pass
     else:
         print(currentLine("app"), request.headers, "\n")
         print(currentLine("app"), " It is not a json media type")
@@ -93,10 +102,11 @@ def login():
                 password = request.get_json()['password']
                 if responder.account(username, password, False):
                     print(currentLine("app"), " User logged")
-                    return jsonify({"code": 200, "url": f"/homepage/"})
+                    return jsonify({"code": 200, "url": f"/homepage/{username}"})
+                    #return render_template("homepage.html", check=False)
                 else:
                     print(currentLine("app"), " Login failed")
-                    response = {'login': 'failed'}
+                    response = {"code": 401, "login": "failed"}
                     return jsonify(response)
             else:
                 print(currentLine("app"), " Failed request")
