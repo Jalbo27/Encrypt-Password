@@ -2,7 +2,11 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" class="html__responsive">
 
 <head>
+  {% if account %}
+  <title>Password Manager | {{ account }}</title>
+  {% else %}
   <title>Password Manager | Alberto Lorenzini</title>
+  {% endif %}
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Password Manager for users, download and upload password">
@@ -127,6 +131,17 @@
         </tr>
       </thead>
       <tbody class="table-group-divider" id="table-body">
+        {% if passwords %}
+          <tr>
+            <th scope="col" class="col-1">{{passwords['id']}}</th>
+            <th scope="col" class="col-1">{{passwords['name']}}</th>
+            <th scope="col" class="col-2">{{passwords['username']}}</th>
+            <th scope="col">{{passwords['password']}}</th>
+            <th scope="col">{{passwords['uri']}}</th>
+            <th scoper="col">Edit</th>
+            <th scoper="col">Delete</th>
+            </tr>
+        {% endif %}
       </tbody>
       <tfoot></tfoot>
     </table>

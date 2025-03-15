@@ -1,37 +1,41 @@
 let container = {};
+let url = window.location.href;
+let url_login = window.location.href.replace('/homepage/', '/login')
 
 window.onload = () => {
   /**
    * CONTROLLO DELLA LOGIN ESEGUITA DALL'UTENTE
    */
-  const form_login = document.getElementById("form-login");
-  form_login.addEventListener("submit", async (event) =>{
-    console.log("I\'m inside the addEventListener function!");
-    event.preventDefault();
-    try {
-      const username = document.getElementById("user-control").value;
-      const password = document.getElementById("password-control").value;
-      if (username != '' && password != '') {
-        console.log("I\'m sending data to backend!");
-        const url_login = window.location.href.replace('/homepage/', '/login')
-        console.log(url_login)
-        const account = {
-          username: username,
-          password: password
+  if (document.getElementById("form-login") != null)
+  {
+    const form_login = document.getElementById("form-login");
+    form_login.addEventListener("submit", async (event) =>{
+      console.log("I\'m inside the addEventListener function!");
+      event.preventDefault();
+      try {
+        const username = document.getElementById("user-control").value;
+        const password = document.getElementById("password-control").value;
+        if (username != '' && password != '') {
+          console.log("I\'m sending data to backend!");
+          console.log(url_login)
+          const account = {
+            username: username,
+            password: password
+          }
+          let response = await sendLogin( account);
+          if (response['code'] == 200){
+            console.log(response['url'])
+            window.location = url_login.replace('/login', response['url'])
+          }
+          else{
+            alert('Utente inesistente')
+          }
         }
-        let response = await sendLogin(url_login, account);
-        if (response['code'] == 200){
-          console.log(response['url'])
-          window.location = url_login.replace('/login', response['url'])
-        }
-        else{
-          alert('Utente inesistente')
-        }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
-    }
-  });
+    });  
+  }
 
   /**
    * CONTROLLO LATO BACKEND DEI DATI INSERITI DALL'UTENTE E AGGIUNTA IN TABELLA DEI NUOVI CAMPI
@@ -67,9 +71,8 @@ window.onload = () => {
 
     try {
       if (name_pass != '' && username != '' && password != '' && uri != '') {
-        const url = window.location.href;
-        let responseData = await sendForm(url);
-        console.log(responseData);
+        let responseData = await sendForm();
+        //console.log(responseData);
         if (responseData['status'] == 'Ok') {
           addNewPassword(responseData);
         }
@@ -91,11 +94,11 @@ window.onload = () => {
  * @param {FormData} formData - `FormData` instance
  * @return {Object} - Response body from URL that was POSTed to
  */
-async function sendLogin(uri, account) {
+async function sendLogin( account) {
   console.log("I\'m inside sendLogin function");
   console.log(JSON.stringify(account));
-  console.log(typeof(uri));
-  const response = await fetch(uri, {
+  console.log(typeof(url_login));
+  const response = await fetch(url_login, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -125,7 +128,7 @@ async function sendLogin(uri, account) {
  * @param {FormData} options 
  * @return {Object} - Response body from URL that was POSTed to
  */
-async function sendForm(url) {
+async function sendForm() {
   console.log('I\'m under sendForm function');
   /**
    * 
@@ -150,7 +153,7 @@ async function sendForm(url) {
     }
     else {
       return response.json().then(value => {
-        console.log(value)
+        //console.log(value)
         return value;
       });
     }
@@ -162,7 +165,8 @@ async function sendForm(url) {
 /**
  * 
  */
-async function manageElement(id, action) {
+async function manageElement(event, id, action) {
+  event.preventDefault();
   requestAction = {
     action: action,
     id: id
@@ -205,11 +209,11 @@ function addNewPassword(data) {
   delBtn.classList.add("btn", "btn-danger");
   delBtn.textContent = "DELETE";
   delBtn.setAttribute("id", `delete-${data["id"]}`);
-  delBtn.addEventListener('click', manageElement(data["id"], "delete"));
+  delBtn.addEventListener('click', manageElement(event, data["id"], "delete"));
   editBtn.classList.add("btn", "btn-primary");
   editBtn.textContent = "EDIT";
   editBtn.setAttribute("id", `edit-${data["id"]}`);
-  editBtn.addEventListener('click', manageElement(data["id"], "edit"));
+  editBtn.addEventListener('click', manageElement(event, data["id"], "edit"));
 
 
   /* ADD OF NEW LINE INSIDE OF THE TABLE */
@@ -233,7 +237,6 @@ function addNewPassword(data) {
   line.childNodes[4].appendChild(link_uri);
   line.childNodes[5].appendChild(editBtn);
   line.childNodes[6].appendChild(delBtn);
-  console.log('line: ' + line);
 
   table.appendChild(line);
 }

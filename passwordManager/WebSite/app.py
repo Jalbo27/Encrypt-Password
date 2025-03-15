@@ -1,4 +1,3 @@
-from locale import currency
 from flask import Flask, render_template, request, make_response, jsonify
 import logging
 from flask.logging import default_handler
@@ -25,8 +24,6 @@ dictConfig({
 
 app = Flask(__name__)
 app.logger.removeHandler(default_handler)
-#logging.basicConfig(filename="DEBUG.log", level=logging.DEBUG)
-
 
 responder = Engine()
 password_dict = []
@@ -37,7 +34,10 @@ password_dict = []
 @app.route("/homepage/")
 @app.route("/homepage/<string:account>", methods=['GET'])
 def home_page(account=''):
-    return render_template("homepage.html", account=escape(account), id=len(password_dict)) 
+    if password_dict != []:
+        return render_template("homepage.html", account=escape(account), passwords=password_dict)
+    else:
+        return render_template("homepage.html", account=escape(account), id=len(password_dict)) 
 
 
 ### UPLOAD THE PASSWORD INTO TABLE
@@ -60,9 +60,8 @@ def uploadPassword(account=''):
             if (responder.sanityPassword(name, username, password, uri)):
                 print(currentLine("app")," I\'m here password sanity check passed successfully")
                 password_dict[-1]['id'] += 1
+                del(password_dict[-1]['action'])
                 if(responder.addPassword(account, password_dict[-1])):
-                    print(currentLine("app"), 'password added')
-                    print(currentLine("app"), 'response sent')
                     password_dict[-1]['status'] = 'Ok'
                     print(password_dict[-1])
                     del password_dict[-1]['_id']
@@ -71,12 +70,18 @@ def uploadPassword(account=''):
                     return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
             else:
                 return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
+        ### DELETE: Delete password of the current account
         elif (request.get_json()['action'] == 'delete'):
-            pass
+            responder.deletePassword(account, password_dict[-1])
+        ### EDIT: Edit a password of the current account
         elif (request.get_json()['action'] == 'edit'):
             pass
+        ### Wrong request
         else:
-            pass
+            print(currentLine("app"), request.headers, "\n")
+            print(currentLine("app"), " Bad request")
+            return jsonify(request)
+    ### The request sent is not json media type
     else:
         print(currentLine("app"), request.headers, "\n")
         print(currentLine("app"), " It is not a json media type")
@@ -103,7 +108,6 @@ def login():
                 if responder.account(username, password, False):
                     print(currentLine("app"), " User logged")
                     return jsonify({"code": 200, "url": f"/homepage/{username}"})
-                    #return render_template("homepage.html", check=False)
                 else:
                     print(currentLine("app"), " Login failed")
                     response = {"code": 401, "login": "failed"}
@@ -145,7 +149,6 @@ def register():
             else:
                 print(currentLine("app"), " Failed request")
                 return render_template("register.html", check=False)
-
         except Exception as error:
             print(currentLine("app"), error)
             return render_template("register.html", check=False)

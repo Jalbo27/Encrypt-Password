@@ -46,3 +46,8 @@ class Engine:
     ### Call account class to store a new password
     def addPassword(self, username: str, line_password: list) -> bool:
         return self.__account.addPassswordAccount(username, line_password)
+    
+    
+    ### Delete password based by account username and if it exists
+    def deletePassword(self, username:str, password_line:str) -> bool:
+        return self.__account.deletePasswordAccount(username, password_line)
