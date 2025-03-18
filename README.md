@@ -1,6 +1,6 @@
 # Password Manager | Alberto Lorenzini
 
-## Applicazione Web
+## Web Application
 ###	REQUISITES:
 - python >= 3.10
 - pymongo
