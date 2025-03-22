@@ -51,3 +51,8 @@ class Engine:
     ### Delete password based by account username and if it exists
     def deletePassword(self, username:str, password_line:str) -> bool:
         return self.__account.deletePasswordAccount(username, password_line)
+    
+    
+    ###
+    def getAllPasswords(self, username:str) -> list:
+        return self.__account.getPasswords(username)

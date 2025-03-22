@@ -16,27 +16,6 @@ class DataBase:
     
     ### Initializa the Database class 
     def initDB(self): 
-        # self.__con = sqlite3.connect("account.db")
-        # self.__db = self.__con.cursor()
-        # file = open('./sql/schema.sql', 'r')
-        # sqlfile = file.read()
-        # file.close()
-        # commands = sqlfile.split(';')
-        # for command in commands:
-        #     try:    
-        #         if(command != ''):
-        #             print(currentLine("db"), command)
-        #             self.__db.execute(command)
-        #     except Exception as msg:
-        #         print(currentLine("db"), msg)
-        
-        # cur = self.__db.execute("SELECT * FROM User;")
-        # for row in cur.fetchall():
-        #     print(row)
-
-        # print(currentLine("db"), "database created")
-        # self.__con.close()
-
         self.__username = quote_plus('alberto')
         self.__password = quote_plus('PzwX6aZW4gbhTnh')
         self.__cluster = 'pmcluster' 
@@ -87,6 +66,29 @@ class DataBase:
             return False
         
         
+    ### GET ALL PASSWORDS OF SPECIFIC ACCOUNT
+    def getPasswords(self, account:list) -> list:
+        uri = f"mongodb+srv://{self.__username}:{self.__password}@{self.__cluster}.blpv7.mongodb.net/?retryWrites=true&w=majority&appName={self.__cluster}"
+        client = MongoClient(uri, server_api=ServerApi(version="1", strict=True, deprecation_errors=True))
+        result = None
+        
+        try:
+            database = client["passwordManager"]
+            id_user = database["User"].find_one(account)
+            if id_user['_id'] != None:
+                collect = database.get_collection(f"Password_{id_user['_id']}")
+                if collect != None :
+                    print(collect)
+                    return collect
+            client.close()
+            return True if result != None else False
+        ### Connection is not gone well                        
+        except Exception as e:
+            print(currentLine("db"), e)
+            client.close()
+            return False
+
+        
     ### INSERT FIELDS IN ANY TABLE 
     def insertFields(self, *fields) -> bool:
         uri = f"mongodb+srv://{self.__username}:{self.__password}@{self.__cluster}.blpv7.mongodb.net/?retryWrites=true&w=majority&appName={self.__cluster}"
@@ -117,35 +119,3 @@ class DataBase:
             client.close()
             print(currentLine("db"), e)
             return False
-        
-        # self.__con = sqlite3.connect("account.db")
-        # self.__con.autocommit = True
-        # self.__db = self.__con.cursor()
-        # count_users = self.__db.execute("SELECT COUNT(id) FROM User").fetchall()
-        # count_pass = self.__db.execute("SELECT COUNT(id) FROM Password").fetchall()
-        # if(self.__db != None):
-        #     try:
-        #         cur = None
-        #         result = []
-        #         for query in queries:
-        #             print(currentLine("db"), query)
-        #             if(query != ''):
-        #                 cur = self.__db.execute(query)
-        #                 result = cur.fetchall()
-        #                 if(result != []):
-        #                     self.__con.close()
-        #                     return result
-                        
-        #         if(self.__db.execute("SELECT COUNT(id) FROM User").fetchall() > count_users):
-        #             print(currentLine("db"), " current users: ", self.__db.execute("SELECT COUNT(id) FROM User").fetchall())
-        #             result = self.__db.execute("SELECT * FROM User").fetchall()[0 - cur.lastrowid]
-        #         elif (self.__db.execute("SELECT COUNT(id) FROM Password").fetchall() > count_pass):
-        #             print(currentLine("db"), " current password: ", self.__db.execute("SELECT COUNT(id) FROM Password").fetchall())
-        #             result = self.__db.execute("SELECT * FROM Password").fetchall()[0 - cur.lastrowid]
-                    
-        #         self.__con.close()
-        #         return result
-        #     except Exception as msg:
-        #         print(currentLine("db"), f"command not executed: {msg}")
-        #         return []
-        # return []

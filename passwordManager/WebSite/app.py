@@ -31,16 +31,18 @@ password_dict = []
 
 ### LOADS HOMEPAGE PAGE --- METHOD = 'GET'
 @app.route("/")
-@app.route("/homepage/")
+@app.route("/homepage/", methods=['GET'])
 @app.route("/homepage/<string:account>", methods=['GET'])
 def home_page(account=''):
-    if password_dict != []:
-        return render_template("homepage.html", account=escape(account), passwords=password_dict)
-    else:
-        return render_template("homepage.html", account=escape(account), id=len(password_dict)) 
+    if (account != ''):
+        password_dict = responder.getAllPasswords(account)
+        if(password_dict != []):
+            return render_template("homepage.html", account=escape(account), passwords=password_dict)
+
+    return render_template("homepage.html") 
 
 
-### UPLOAD THE PASSWORD INTO TABLE
+### UPLOAD THE PASSWORD INTO TABLE --- METHOD = 'POST'
 @app.route("/homepage/", methods=['POST'])
 @app.route("/homepage/<string:account>", methods=['POST'])
 def uploadPassword(account=''):
