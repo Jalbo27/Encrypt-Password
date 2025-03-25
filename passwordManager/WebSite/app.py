@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, make_response, jsonify
-import logging
 from flask.logging import default_handler
 from logging.config import dictConfig
 from engine import Engine
@@ -38,6 +37,8 @@ def home_page(account=''):
         password_dict = responder.getAllPasswords(account)
         if(password_dict != []):
             return render_template("homepage.html", account=escape(account), passwords=password_dict)
+        else:
+            return render_template("homepage.html", account=escape(account))
 
     return render_template("homepage.html") 
 
@@ -51,6 +52,7 @@ def uploadPassword(account=''):
         print(currentLine("app"), "il JSON ricevuto è: ", request.get_json())
         if(account == ''):
             return jsonify({'message': 'You have not an account. You have to login before', 'status': 'failed'})
+        
         ### CHECK THE ACTION: 'submit', 'delete', 'edit'
         if(request.get_json()['action'] == 'submit'):
             password_dict.append(request.get_json())
@@ -72,12 +74,22 @@ def uploadPassword(account=''):
                     return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
             else:
                 return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
+            
         ### DELETE: Delete password of the current account
         elif (request.get_json()['action'] == 'delete'):
-            responder.deletePassword(account, password_dict[-1])
+            if responder.deletePassword(account, password_dict[request.get_json()['id']]):
+                print(currentLine("app"), "password deleted")
+                return jsonify({'message':'password deleted successfully', 'code': 200})
+            else:
+                return jsonify({'message':'error to delete the password', 'code': 417})
+            
         ### EDIT: Edit a password of the current account
         elif (request.get_json()['action'] == 'edit'):
-            pass
+            if responder.deletePassword(account, password_dict[request.get_json()['id']]):
+                return jsonify({'message':'password edited successfully', 'code': 200})
+            else:
+                return jsonify({'message':'error to edit the password', 'code': 417})
+            
         ### Wrong request
         else:
             print(currentLine("app"), request.headers, "\n")

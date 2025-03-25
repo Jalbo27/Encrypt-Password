@@ -1,6 +1,6 @@
 let container = {};
 let url = window.location.href;
-let url_login = window.location.href.replace('/homepage/', '/login')
+let url_login = window.location.origin + '/login';
 
 window.onload = () => {
   /**
@@ -48,8 +48,16 @@ window.onload = () => {
     let password = document.getElementsByName("password-control")[0].value;
     let uri = document.getElementsByName("uri-control")[0].value;
     let number;
-    if (document.getElementById('table-body').childNodes.length >= 2)
-      number = parseInt(document.getElementById('table-body').lastChild.childNodes[0].textContent);
+    /**
+     * GET LAST ID OF PASSSWORD TO UPDATE THE DATABASE AND FRONTEND
+     */
+    if (document.getElementById('table-body').childNodes.length >= 2){
+      let table = document.getElementById('table-body');
+      let last_line = table.getElementsByTagName('tr');
+      let lenght = last_line.length - 1
+      console.log(document.getElementById('table-body').getElementsByTagName('tr').item(lenght).firstElementChild.textContent);
+      number = parseInt(last_line.item(lenght).firstElementChild.textContent);
+    }
     else
       number = -1;
 
@@ -202,19 +210,19 @@ function addNewPassword(data) {
   let pwdBtn = document.createElement('button');
   let link_uri = document.createElement('a');
   pwdBtn.style = "border:none;background:none;";
+  pwdBtn.textContent = "•••••••••••";
+  pwdBtn.addEventListener('click', (e) => {navigator.clipboard.writeText(data["password"])});
   link_uri.href = data['uri'];
   link_uri.target = "_blank";
   link_uri.textContent = data['uri'];
-  pwdBtn.textContent = "•••••••••••";
   delBtn.classList.add("btn", "btn-danger");
   delBtn.textContent = "DELETE";
   delBtn.setAttribute("id", `delete-${data["id"]}`);
   delBtn.addEventListener('click', manageElement(event, data["id"], "delete"));
-  editBtn.classList.add("btn", "btn-primary");
+  editBtn.classList.add("btn", "btn-warning");
   editBtn.textContent = "EDIT";
   editBtn.setAttribute("id", `edit-${data["id"]}`);
   editBtn.addEventListener('click', manageElement(event, data["id"], "edit"));
-
 
   /* ADD OF NEW LINE INSIDE OF THE TABLE */
   for (i = 0; i < 7; i++) {

@@ -131,10 +131,20 @@
         </tr>
       </thead>
       <tbody class="table-group-divider" id="table-body">
-        {% if passwords %}
+        {% if passwords != [] %}
         {% for password in passwords %}
           <tr>
-            <th scope="col" class="col-1">{{password|e}}</th>
+            {% for key, item in password.items() %}
+            {% if key == 'id' or key == 'name' or key == 'username' %}
+            <th scope="col" class="col-1">{{item|e}}</th>
+            {% elif key == 'password' %}
+            <th scope="col" class="col-1"><button style="border:none;background:none;">•••••••••••</button></th>
+            {% elif key == 'uri' %}
+            <th scope="col" class="col-1"><a href={{item|e}} target="_blank">{{item|e}}</a></th>
+            {% endif %}
+            {% endfor %}
+            <th scope="col" class="col-1"><button class="btn btn-warning" id="edit-{{passwords[0]['id']|e}}">EDIT</button></th>
+            <th scope="col" class="col-1"><button class="btn btn-danger" id="delete-{{passwords[0]['id']|e}}">DELETE</button></th>
           </tr>
         {% endfor %}
         {% endif %}
@@ -143,5 +153,4 @@
     </table>
   </div>
 </body>
-
 </html>

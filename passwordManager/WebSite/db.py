@@ -14,14 +14,14 @@ class DataBase:
         self.initDB()
         
     
-    ### Initializa the Database class 
+    ### INITIALIZE DATABASE CLASS
     def initDB(self): 
         self.__username = quote_plus('alberto')
         self.__password = quote_plus('PzwX6aZW4gbhTnh')
         self.__cluster = 'pmcluster' 
         uri = f"mongodb+srv://{self.__username}:{self.__password}@{self.__cluster}.blpv7.mongodb.net/?retryWrites=true&w=majority&appName={self.__cluster}"
         client = MongoClient(uri, server_api=ServerApi(version="1", strict=True, deprecation_errors=True))
-        # Send a ping to confirm a successful connection
+        ### Send a ping to confirm a successful connection
         try:
             client.admin.command('ping')
             print(currentLine("db"), "connection opened")
@@ -40,7 +40,7 @@ class DataBase:
         return True
     
     
-    ### Check if the user exists or not
+    ### CHECK IF THE USER EXISTS OR NOT
     def account(self, user:list, is_new) -> bool:
         uri = f"mongodb+srv://{self.__username}:{self.__password}@{self.__cluster}.blpv7.mongodb.net/?retryWrites=true&w=majority&appName={self.__cluster}"
         client = MongoClient(uri, server_api=ServerApi(version="1", strict=True, deprecation_errors=True))
@@ -70,23 +70,31 @@ class DataBase:
     def getPasswords(self, account:list) -> list:
         uri = f"mongodb+srv://{self.__username}:{self.__password}@{self.__cluster}.blpv7.mongodb.net/?retryWrites=true&w=majority&appName={self.__cluster}"
         client = MongoClient(uri, server_api=ServerApi(version="1", strict=True, deprecation_errors=True))
-        result = None
-        
+        allItems = []
+
         try:
             database = client["passwordManager"]
             id_user = database["User"].find_one(account)
             if id_user['_id'] != None:
                 collect = database.get_collection(f"Password_{id_user['_id']}")
+                ### Check if collection is not None
                 if collect != None :
-                    print(collect)
-                    return collect
+                    cursor = collect.find({}, {"_id": 0})
+                    ### Check if there are elements
+                    if cursor.alive:
+                        allItems = list(cursor)
+                    print (allItems)
+                    cursor.close()
+                    client.close()
+                    return allItems
+            ### There are not passwords or user does not exist
             client.close()
-            return True if result != None else False
+            return []
         ### Connection is not gone well                        
         except Exception as e:
             print(currentLine("db"), e)
             client.close()
-            return False
+            return []
 
         
     ### INSERT FIELDS IN ANY TABLE 
@@ -104,7 +112,7 @@ class DataBase:
             if id_user['_id'] != None:
                 collect = database.get_collection(f"Password_{id_user['_id']}")
                 if(collect != None):
-                    result = database[f"Password_{id_user['_id']}"].insert_one(fields[1], True)
+                    result = collect.insert_one(fields[1], True)
                 else:
                     self.__createCollection(f"Password_{id_user['_id']}", client)
                     result = database[f"Password_{id_user['_id']}"].insert_one(fields[1], True)
@@ -118,4 +126,27 @@ class DataBase:
         except Exception as e:
             client.close()
             print(currentLine("db"), e)
+            return False
+
+
+    ### DELETE A SPECIFIC PASSWORD BASED BY ACCOUNT
+    def deletePassword(self, account: list, document: list) -> bool:
+        uri = f"mongodb+srv://{self.__username}:{self.__password}@{self.__cluster}.blpv7.mongodb.net/?retryWrites=true&w=majority&appName={self.__cluster}"
+        client = MongoClient(uri, server_api=ServerApi(version="1", strict=True, deprecation_errors=True))
+        result = None
+
+        try:
+            database = client["passwordManager"]
+            id_user = database["User"].find_one(account)
+            if id_user['_id'] != None:
+                collect = database.get_collection(f"Password_{id_user['_id']}")
+                if collect != None:
+                    is_active = collect.find(document)
+                    if is_active.alive:
+                        result = collect.delete_one(document)
+                        return True if result != None else False
+                    else:
+                        return False    
+        except Exception as e:
+            print(e)
             return False

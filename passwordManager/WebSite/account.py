@@ -10,17 +10,7 @@ class Account:
         print(currentLine("account"))
         self.__db = DataBase()
         
-    
-    ### List all users authenticated on the web page
-    def __listUsers(self):
-        pass
-
-
-    ### List all passwords saved on the web page
-    def __listPasswords(self):
-        pass
-     
-        
+            
     ### Create a new account and add to db
     def createAccount(self, username, password) -> bool:
         return self.__db.account({'username': username, 'password': password}, True)
