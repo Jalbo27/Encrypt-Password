@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, make_response, jsonify
+from werkzeug.middleware.proxy_fix import ProxyFix
+from urllib import response
+from flask import Flask, render_template, request, make_response, jsonify, session
 from flask.logging import default_handler
 from logging.config import dictConfig
 from engine import Engine
@@ -22,7 +24,14 @@ dictConfig({
 })
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.logger.removeHandler(default_handler)
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=10
+)
 
 responder = Engine()
 password_dict = []
@@ -35,6 +44,7 @@ password_dict = []
 def home_page(account=''):
     if (account != ''):
         password_dict = responder.getAllPasswords(account)
+        print(currentLine("app"), password_dict)
         if(password_dict != []):
             return render_template("homepage.html", account=escape(account), passwords=password_dict)
         else:
@@ -50,6 +60,7 @@ def uploadPassword(account=''):
     if(request.is_json):
         print(currentLine("app"), request.headers)
         print(currentLine("app"), "il JSON ricevuto è: ", request.get_json())
+        print(currentLine("app"), "The dictionary of password: ", password_dict)
         if(account == ''):
             return jsonify({'message': 'You have not an account. You have to login before', 'status': 'failed'})
         
@@ -77,7 +88,7 @@ def uploadPassword(account=''):
             
         ### DELETE: Delete password of the current account
         elif (request.get_json()['action'] == 'delete'):
-            if responder.deletePassword(account, password_dict[request.get_json()['id']]):
+            if responder.deletePassword(account, int(request.get_json()['id'])):
                 print(currentLine("app"), "password deleted")
                 return jsonify({'message':'password deleted successfully', 'code': 200})
             else:
@@ -85,7 +96,7 @@ def uploadPassword(account=''):
             
         ### EDIT: Edit a password of the current account
         elif (request.get_json()['action'] == 'edit'):
-            if responder.deletePassword(account, password_dict[request.get_json()['id']]):
+            if responder.deletePassword(account, int(request.get_json()['id'])):
                 return jsonify({'message':'password edited successfully', 'code': 200})
             else:
                 return jsonify({'message':'error to edit the password', 'code': 417})

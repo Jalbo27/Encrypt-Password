@@ -6,11 +6,9 @@ window.onload = () => {
   /**
    * CONTROLLO DELLA LOGIN ESEGUITA DALL'UTENTE
    */
-  if (document.getElementById("form-login") != null)
-  {
+  if (document.getElementById("form-login") != null) {
     const form_login = document.getElementById("form-login");
-    form_login.addEventListener("submit", async (event) =>{
-      console.log("I\'m inside the addEventListener function!");
+    form_login.addEventListener("submit", async (event) => {
       event.preventDefault();
       try {
         const username = document.getElementById("user-control").value;
@@ -22,19 +20,19 @@ window.onload = () => {
             username: username,
             password: password
           }
-          let response = await sendLogin( account);
-          if (response['code'] == 200){
+          let response = await sendLogin(account);
+          if (response['code'] == 200) {
             console.log(response['url'])
             window.location = url_login.replace('/login', response['url'])
           }
-          else{
+          else {
             alert('Utente inesistente')
           }
         }
       } catch (error) {
         console.log(error);
       }
-    });  
+    });
   }
 
   /**
@@ -51,11 +49,10 @@ window.onload = () => {
     /**
      * GET LAST ID OF PASSSWORD TO UPDATE THE DATABASE AND FRONTEND
      */
-    if (document.getElementById('table-body').childNodes.length >= 2){
+    if (document.getElementById('table-body').childNodes.length >= 2) {
       let table = document.getElementById('table-body');
       let last_line = table.getElementsByTagName('tr');
       let lenght = last_line.length - 1
-      console.log(document.getElementById('table-body').getElementsByTagName('tr').item(lenght).firstElementChild.textContent);
       number = parseInt(last_line.item(lenght).firstElementChild.textContent);
     }
     else
@@ -68,14 +65,14 @@ window.onload = () => {
       username: username,
       password: password,
       uri: uri
-    }
+    };
 
-    console.log('name: ' + container.name);
-    console.log('username: ' + container.username);
-    console.log('password: ' + container.password);
-    console.log('uri: ' + container.uri);
-    console.log(container);
-    console.log('I\'m under submit event');
+    // console.log('name: ' + container.name);
+    // console.log('username: ' + container.username);
+    // console.log('password: ' + container.password);
+    // console.log('uri: ' + container.uri);
+    // console.log(container);
+    // console.log('I\'m under submit event');
 
     try {
       if (name_pass != '' && username != '' && password != '' && uri != '') {
@@ -94,6 +91,14 @@ window.onload = () => {
       console.error(error);
     }
   });
+
+  /**
+    * ADD THE EVENT TO THE ALL BUTTONS TO DELETE OR EDIT
+    */
+  let editbtns = document.getElementsByClassName('btn btn-warning');
+  let delbtns = document.getElementsByClassName('btn btn-danger');
+  Array.prototype.map.call(editbtns, element => { element.addEventListener("click", modifyElement) });
+  Array.prototype.map.call(delbtns, element => { element.addEventListener("click", modifyElement) });
 }
 
 /**
@@ -102,10 +107,10 @@ window.onload = () => {
  * @param {FormData} formData - `FormData` instance
  * @return {Object} - Response body from URL that was POSTed to
  */
-async function sendLogin( account) {
-  console.log("I\'m inside sendLogin function");
-  console.log(JSON.stringify(account));
-  console.log(typeof(url_login));
+async function sendLogin(account) {
+  // console.log("I\'m inside sendLogin function");
+  // console.log(JSON.stringify(account));
+  // console.log(typeof(url_login));
   const response = await fetch(url_login, {
     method: "POST",
     headers: {
@@ -137,7 +142,6 @@ async function sendLogin( account) {
  * @return {Object} - Response body from URL that was POSTed to
  */
 async function sendForm() {
-  console.log('I\'m under sendForm function');
   /**
    * 
    * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
@@ -145,8 +149,8 @@ async function sendForm() {
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
    * 
   */
-  console.log("JSON FORMAT: \n" + JSON.stringify(container));
-  console.log(url)
+  // console.log("JSON FORMAT: \n" + JSON.stringify(container));
+  // console.log(url)
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -161,7 +165,6 @@ async function sendForm() {
     }
     else {
       return response.json().then(value => {
-        //console.log(value)
         return value;
       });
     }
@@ -171,14 +174,14 @@ async function sendForm() {
 }
 
 /**
- * 
+ * @return {Object} 
  */
-async function manageElement(event, id, action) {
-  event.preventDefault();
+async function modifyElement(e) {
+  e.preventDefault();
   requestAction = {
-    action: action,
-    id: id
-  }
+    action: e.target.dataset.action,
+    id: e.target.getAttribute('id'),
+  };
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -193,12 +196,14 @@ async function manageElement(event, id, action) {
     }
     else {
       return response.json().then(value => {
-        console.log(value)
+        console.log(value);
+        
         return value;
       });
     }
-  });
+  })
 }
+
 
 function addNewPassword(data) {
   let table = document.getElementById("table-body");
@@ -209,20 +214,24 @@ function addNewPassword(data) {
   let editBtn = document.createElement('button');
   let pwdBtn = document.createElement('button');
   let link_uri = document.createElement('a');
-  pwdBtn.style = "border:none;background:none;";
+  pwdBtn.setAttribute("id", "password-btn")
   pwdBtn.textContent = "•••••••••••";
-  pwdBtn.addEventListener('click', (e) => {navigator.clipboard.writeText(data["password"])});
+  pwdBtn.addEventListener('click', (e) => { navigator.clipboard.writeText(data["password"]) });
   link_uri.href = data['uri'];
   link_uri.target = "_blank";
   link_uri.textContent = data['uri'];
   delBtn.classList.add("btn", "btn-danger");
   delBtn.textContent = "DELETE";
-  delBtn.setAttribute("id", `delete-${data["id"]}`);
-  delBtn.addEventListener('click', manageElement(event, data["id"], "delete"));
+  delBtn.setAttribute("id", `${data['id']}`);
+  delBtn.setAttribute("type", "button");
+  delBtn.setAttribute("data-action", "delete");
+  delBtn.addEventListener('click', modifyElement);
   editBtn.classList.add("btn", "btn-warning");
   editBtn.textContent = "EDIT";
-  editBtn.setAttribute("id", `edit-${data["id"]}`);
-  editBtn.addEventListener('click', manageElement(event, data["id"], "edit"));
+  editBtn.setAttribute("id", `${data["id"]}`);
+  editBtn.setAttribute("data-action", "edit");
+  editBtn.setAttribute("type", "button");
+  editBtn.addEventListener('click', modifyElement);
 
   /* ADD OF NEW LINE INSIDE OF THE TABLE */
   for (i = 0; i < 7; i++) {
@@ -234,7 +243,6 @@ function addNewPassword(data) {
   /**
    * ADD OF CONTENT SENT BY BACKEND TO THE FIELDS OF THE NEW LIÌNE
    */
-  console.log(line);
   line.childNodes[0].textContent = data['id'];
   line.childNodes[0].classList.add("col-1");
   line.childNodes[5].classList.add("col-1");

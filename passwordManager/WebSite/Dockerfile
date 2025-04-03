@@ -1,16 +1,19 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:22.04
+FROM alpine:3.14
 
-RUN apt-get update && apt-get install -y python3 python3-pip
-RUN pip install Flask pymongo
-RUN mkdir /home/static/ /home/templates/
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
+RUN pip3 install --no-cache Flask pymongo gunicorn
+RUN mkdir /home/static/ /home/templates/ /home/secrets/
 WORKDIR "/home/"
 
 COPY ["*.py", "./"]
 COPY ["./templates/", "/home/templates/"]
 COPY ["./static/", "/home/static/"]
+COPY ./.nginx/rootCA.crt ./.nginx/rootCA.key /home/secrets/
 
 ENV FLASK_APP=app
-ENV FLASK_RUN_HOST=0.0.0.0
-EXPOSE 5000/tcp
-CMD ["flask", "run", "--debug"]
+EXPOSE 8000/tcp
+CMD ["gunicorn", "--certfile=/home/secrets/rootCA.crt", "--keyfile=/home/secrets/rootCA.key", "-w", "4" ,"-b", "0.0.0.0:8000", "app:app"]

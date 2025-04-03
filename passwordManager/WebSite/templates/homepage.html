@@ -9,14 +9,18 @@
   {% endif %}
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src https:" />
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="object-src 'none'" />
   <meta name="description" content="Password Manager for users, download and upload password">
   <link rel="shortcut icon" href="#">
   <link rel="stylesheet" type="text/css" href="../static/bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="../static/custom_style.css">
   <script type="text/javascript" src="../static/bootstrap/js/bootstrap.js" defer></script>
   <script type="text/javascript" src="../static/homepage.js"></script>
 </head>
 
-<body data-bs-theme="dark" style="overflow-x: hidden;">
+<body data-bs-theme="dark">
   <nav class="navbar navbar-expand-lg bg-body-tertiary" id="nav-bar">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
@@ -43,7 +47,7 @@
             <a class="nav-link" href="#">Hello {{ account }}</a>
             {% else %}
             <button type="button" class="btn nav-link" data-bs-toggle="modal" data-bs-target="#exampleModal"
-              data-bs-whatever="@mdo" style="border: hidden;">
+              data-bs-whatever="@mdo" id="login-btn">
               Login
             </button>
             <form id="form-login" method="post">
@@ -92,8 +96,8 @@
       </div>
     </div>
   </nav>
-  <form class="row g-3 align-text-top" style="padding-block-start: 3ch; padding-left: 30ch;" id="form-element" method="post">
-    <div class="col-1 form-floating">
+  <form class="row g-3 align-text-top" id="form-element" method="post">
+    <div class="col-auto form-floating">
       <input type="text" class="form-control" id="floatingInput" name="name-control" placeholder="Name">
       <label for="floatingInput">Name</label>
     </div>
@@ -101,12 +105,12 @@
       <input type="text" class="form-control" id="floatingInput" name="username-control" placeholder="Username">
       <label for="floatingInput">Username</label>
     </div>
-    <div class="col-3 form-floating">
+    <div class="col-auto form-floating">
       <input type="password" class="form-control" id="floatingInput" name="password-control" placeholder="Password"
         aria-describedby="passwordHelpInline">
       <label for="floatingInput">Password</label>
     </div>
-    <div class="col-3 form-floating">
+    <div class="col-auto form-floating">
       <input type="url" class="form-control" id="floatingInput" name="uri-control" placeholder="URI:\\">
       <label for="floatingInput">URI:\\</label>
     </div>
@@ -114,7 +118,7 @@
       <input type="submit" class="btn btn-success btn-lg" value="Submit" id="submitBtn"></input>
     </div>
   </form>
-  <div class="grid text-center">
+  <div class="grid text-center" id="table-container">
     <table
       class="table table-striped table-hover table-bordered caption-top border border-rounded-4 border-primary border-4"
       id="table">
@@ -133,19 +137,22 @@
       <tbody class="table-group-divider" id="table-body">
         {% if passwords != [] %}
         {% for password in passwords %}
-          <tr>
-            {% for key, item in password.items() %}
-            {% if key == 'id' or key == 'name' or key == 'username' %}
-            <th scope="col" class="col-1">{{item|e}}</th>
-            {% elif key == 'password' %}
-            <th scope="col" class="col-1"><button style="border:none;background:none;">•••••••••••</button></th>
-            {% elif key == 'uri' %}
-            <th scope="col" class="col-1"><a href={{item|e}} target="_blank">{{item|e}}</a></th>
-            {% endif %}
-            {% endfor %}
-            <th scope="col" class="col-1"><button class="btn btn-warning" id="edit-{{passwords[0]['id']|e}}">EDIT</button></th>
-            <th scope="col" class="col-1"><button class="btn btn-danger" id="delete-{{passwords[0]['id']|e}}">DELETE</button></th>
-          </tr>
+        <tr>
+          {% for key, item in password.items() %}
+          {% if key == 'id' or key == 'name' or key == 'username' %}
+          <th scope="col" class="col-1">{{item|e}}</th>
+          {% elif key == 'password' %}
+          <th scope="col" class="col-1"><button id="password-btn" type="button">•••••••••••</button>
+          </th>
+          {% elif key == 'uri' %}
+          <th scope="col" class="col-1"><a href={{item|e}} target="_blank">{{item|e}}</a></th>
+          {% endif %}
+          {% endfor %}
+          <th scope="col" class="col-1"><button type="button" class="btn btn-warning" data-action="edit"
+              id="{{password['id']|e}}">EDIT</button></th>
+          <th scope="col" class="col-1"><button type="button" class="btn btn-danger" data-action="delete"
+              id="{{password['id']|e}}">DELETE</button></th>
+        </tr>
         {% endfor %}
         {% endif %}
       </tbody>
@@ -153,4 +160,5 @@
     </table>
   </div>
 </body>
+
 </html>

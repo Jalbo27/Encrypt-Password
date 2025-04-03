@@ -37,5 +37,5 @@ class Account:
                 
     
     ### Delete an existing password from database based by user id
-    def deletePasswordAccount(self, username: str, password_line: list) -> bool:
-        return self.__db.modifyFields({"username": username}, password_line)
+    def deletePasswordAccount(self, username: str, id: int) -> bool:
+        return self.__db.deletePassword({"username": username}, {'id': id})
