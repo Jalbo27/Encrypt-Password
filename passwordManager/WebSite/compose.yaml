@@ -6,6 +6,7 @@ services:
     networks:
       - dbdata
     env_file: .mongo.env
+    restart: always
 
   nginx:
     image: nginx:latest
