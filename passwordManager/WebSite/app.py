@@ -1,6 +1,7 @@
+import werkzeug.exceptions
+from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
-from urllib import response
-from flask import Flask, render_template, request, make_response, jsonify, session
+from flask import Flask, render_template, request, make_response, jsonify, session, json
 from flask.logging import default_handler
 from logging.config import dictConfig
 from engine import Engine
@@ -42,7 +43,7 @@ password_dict = []
 @app.route("/homepage/", methods=['GET'])
 @app.route("/homepage/<string:account>", methods=['GET'])
 def home_page(account=''):
-    if (account != ''):
+    if account != '':
         password_dict = responder.getAllPasswords(account)
         print(currentLine("app"), password_dict)
         if(password_dict != []):
@@ -68,23 +69,18 @@ def uploadPassword(account=''):
         if(request.get_json()['action'] == 'submit'):
             password_dict.append(request.get_json())
             print(currentLine("app"), password_dict)
-            name = password_dict[-1]['name']
-            username = password_dict[-1]['username']
-            password = password_dict[-1]['password']
-            uri = password_dict[-1]['uri']
-            if (responder.sanityPassword(name, username, password, uri)):
+            if (responder.sanityPassword(password_dict[-1])):
                 print(currentLine("app")," I\'m here password sanity check passed successfully")
                 password_dict[-1]['id'] += 1
-                del(password_dict[-1]['action'])
-                if(responder.addPassword(account, password_dict[-1])):
-                    password_dict[-1]['status'] = 'Ok'
+                del password_dict[-1]['action']
+                if (responder.addPassword(account, password_dict[-1])):
                     print(password_dict[-1])
                     del password_dict[-1]['_id']
-                    return jsonify(password_dict[-1])
+                    return jsonify({'message': 'password added successfully', 'code': 200, 'id': password_dict[-1]['id']})
                 else:
-                    return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
+                    return jsonify({'message': 'failed to load password or there are problems in some fields', 'code': 417})
             else:
-                return jsonify({'message': 'failed to load password or there are problems in some fields', 'status': 'failed'})
+                return jsonify({'message': 'failed to load password or there are problems in some fields', 'code': 417})
             
         ### DELETE: Delete password of the current account
         elif (request.get_json()['action'] == 'delete'):
@@ -105,12 +101,12 @@ def uploadPassword(account=''):
         else:
             print(currentLine("app"), request.headers, "\n")
             print(currentLine("app"), " Bad request")
-            return jsonify(request)
+            return render_template("homepage.html")
     ### The request sent is not json media type
     else:
         print(currentLine("app"), request.headers, "\n")
         print(currentLine("app"), " It is not a json media type")
-        return jsonify(request)
+        return render_template("homepage.html")
     
     
 ### LOADS LOGIN PAGE --- METHOD = 'GET'
@@ -135,17 +131,16 @@ def login():
                     return jsonify({"code": 200, "url": f"/homepage/{username}"})
                 else:
                     print(currentLine("app"), " Login failed")
-                    response = {"code": 401, "login": "failed"}
-                    return jsonify(response)
+                    return jsonify({"code": 401, "message": "login failed"})
             else:
                 print(currentLine("app"), " Failed request")
-                return render_template("login.html", check=False)
+                return jsonify({"code": 401, "message": "login failed"})
         except Exception as error:
             print(currentLine("app"), error)
-            return render_template("login.html", check=False)
+            return jsonify({"code": 401, "message": "login failed"})
     else:
         print(currentLine("app"), " It is not a json media type")
-        return render_template("login.html", check=False)
+        return jsonify({"code": 401, "message": "login failed"})
             
             
 ### LOADS REFGISTER PAGE --- METHOD = 'GET'
@@ -159,6 +154,7 @@ def registerPage():
 def register():
     print(currentLine("app"), " I\'m inside subscribe function")
     if (request.is_json):
+        print(currentLine("app"), request.headers)
         print(currentLine("app"), request.get_json())
         try:
             if(request.get_json() != None):
@@ -169,8 +165,7 @@ def register():
                     return jsonify({"code": 200, "url": f"/homepage/"})
                 else:
                     print(currentLine("app"), " Register failed")
-                    response = {'register': 'failed'}
-                    return jsonify(response)
+                    return jsonify({"code": 401, 'message': 'register failed'})
             else:
                 print(currentLine("app"), " Failed request")
                 return render_template("register.html", check=False)
@@ -189,8 +184,30 @@ def logoutPage():
 
 
 ### HANDLE OF STATUS CODE OF ERROR (400 AND 500)
-@app.errorhandler(404)
+@app.errorhandler(werkzeug.exceptions.NotFound)
 def not_found(error):
     resp = make_response(render_template('error.html'), 404)
     resp.headers['X-Something'] = 'A value'
     return resp
+
+@app.errorhandler(werkzeug.exceptions.Forbidden)
+def forbidden():
+    errorHandler(403)
+
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    # start with the correct headers and status code from the error
+    response = e.get_response()
+    # replace the body with JSON
+    response.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    })
+    response.content_type = "application/json"
+    return response
+
+def errorHandler(error):
+    return render_template("error.html", error=error)

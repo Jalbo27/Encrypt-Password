@@ -3,16 +3,15 @@ let url = window.location.href;
 let url_login = window.location.origin + '/login';
 
 window.onload = () => {
-  $(".toggle-password").click(function() {
-
-    $(this).toggleClass("fa-eye fa-eye-slash");
-    var input = $($(this).attr("toggle"));
-    if (input.attr("type") == "password") {
-      input.attr("type", "text");
-    } else {
-      input.attr("type", "password");
-    }
-  });
+  // $(".toggle-password").click(function () {
+  //   $(this).toggleClass("fa-eye fa-eye-slash");
+  //   var input = $($(this).attr("toggle"));
+  //   if (input.attr("type") == "password") {
+  //     input.attr("type", "text");
+  //   } else {
+  //     input.attr("type", "password");
+  //   }
+  // });
   /**
    * CONTROLLO DELLA LOGIN ESEGUITA DALL'UTENTE
    */
@@ -87,9 +86,8 @@ window.onload = () => {
     try {
       if (name_pass != '' && username != '' && password != '' && uri != '') {
         let responseData = await sendForm();
-        //console.log(responseData);
-        if (responseData['status'] == 'Ok') {
-          addNewPassword(responseData);
+        if (responseData['code'] == 200) {
+          addNewPassword(responseData['id']);
         }
         else {
         }
@@ -114,13 +112,14 @@ window.onload = () => {
 /**
  * Helper function for POSTing data as JSON with fetch.
  *
- * @param {FormData} formData - `FormData` instance
+ * @param {FormData} options.formData - `FormData` instance
  * @return {Object} - Response body from URL that was POSTed to
  */
 async function sendLogin(account) {
   // console.log("I\'m inside sendLogin function");
   // console.log(JSON.stringify(account));
   // console.log(typeof(url_login));
+  console.log(JSON.stringify(account));
   const response = await fetch(url_login, {
     method: "POST",
     headers: {
@@ -165,7 +164,7 @@ async function sendForm() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Accept-Post": "application/json"
+      "Accept": "application/json"
     },
     body: JSON.stringify(container)
   }).then(response => {
@@ -184,13 +183,15 @@ async function sendForm() {
 }
 
 /**
+ * @param {HTMLElement} e 
  * @return {Object} 
  */
 async function modifyElement(e) {
   e.preventDefault();
+  let btnId = e.target.getAttribute('id');
   requestAction = {
     action: e.target.dataset.action,
-    id: e.target.getAttribute('id'),
+    id: btnId,
   };
   const response = await fetch(url, {
     method: "POST",
@@ -207,15 +208,32 @@ async function modifyElement(e) {
     else {
       return response.json().then(value => {
         console.log(value);
-        
-        return value;
+        if(value['code'] == 200)
+        {
+          if (value['message'].includes("deleted")){
+            let column = e.target.parentElement;
+            let row = e.target.parentElement.parentElement;
+            let table = document.getElementById("table-body");
+            let table_rows = table.getElementsByTagName("tr")
+            column.removeChild(e.target)
+            row.removeChild(column);
+            table.removeChild(row);
+            Array.prototype.map.call(table_rows, element => {
+              let row_cur_id = parseInt(element.childNodes[0].textContent);
+              if(row_cur_id > parseInt(btnId)){
+                element.childNodes[0].textContent = String(row_cur_id - 1);
+                element.childNodes[6].firstElementChild.setAttribute("id", String(row_cur_id - 1)); 
+              }
+            });
+          }
+        }
       });
     }
   })
 }
 
 
-function addNewPassword(data) {
+function addNewPassword(id) {
   let table = document.getElementById("table-body");
 
   /* CREATE OF FIELD AND NEW LINE INSIDE OF TABLE FOR NEW PASSWORDS */
@@ -226,19 +244,19 @@ function addNewPassword(data) {
   let link_uri = document.createElement('a');
   pwdBtn.setAttribute("id", "password-btn")
   pwdBtn.textContent = "•••••••••••";
-  pwdBtn.addEventListener('click', (e) => { navigator.clipboard.writeText(data["password"]) });
-  link_uri.href = data['uri'];
+  pwdBtn.addEventListener('click', (e) => { navigator.clipboard.writeText(container.password) });
+  link_uri.href = container.uri;
   link_uri.target = "_blank";
-  link_uri.textContent = data['uri'];
+  link_uri.textContent = container.uri;
   delBtn.classList.add("btn", "btn-danger");
   delBtn.textContent = "DELETE";
-  delBtn.setAttribute("id", `${data['id']}`);
+  delBtn.setAttribute("id", `${id}`);
   delBtn.setAttribute("type", "button");
   delBtn.setAttribute("data-action", "delete");
   delBtn.addEventListener('click', modifyElement);
   editBtn.classList.add("btn", "btn-warning");
   editBtn.textContent = "EDIT";
-  editBtn.setAttribute("id", `${data["id"]}`);
+  editBtn.setAttribute("id", `${id}`);
   editBtn.setAttribute("data-action", "edit");
   editBtn.setAttribute("type", "button");
   editBtn.addEventListener('click', modifyElement);
@@ -253,12 +271,12 @@ function addNewPassword(data) {
   /**
    * ADD OF CONTENT SENT BY BACKEND TO THE FIELDS OF THE NEW LIÌNE
    */
-  line.childNodes[0].textContent = data['id'];
+  line.childNodes[0].textContent = id;
   line.childNodes[0].classList.add("col-1");
   line.childNodes[5].classList.add("col-1");
   line.childNodes[6].classList.add("col-1");
-  line.childNodes[1].textContent = data['name'];
-  line.childNodes[2].textContent = data['username'];
+  line.childNodes[1].textContent = container.name;
+  line.childNodes[2].textContent = container.username;
   line.childNodes[3].appendChild(pwdBtn);
   line.childNodes[4].appendChild(link_uri);
   line.childNodes[5].appendChild(editBtn);

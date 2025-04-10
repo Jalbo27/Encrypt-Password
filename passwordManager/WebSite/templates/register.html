@@ -5,8 +5,10 @@
   <title>Password Manager | Subscribe</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src https:" />
   <meta name="description" content="Password Manager for users, download and upload password">
+  <meta http-equiv="Content-Security-Policy" content="default-src https:" />
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="object-src 'none'" />
   <link rel="shortcut icon" href="#">
   <link rel="stylesheet" type="text/css" href="../static/bootstrap/css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="../static/login.css">
@@ -40,7 +42,7 @@
       <div class="grid row-gap-6">
         <div class="p-5 g-col-6 form floating">
           <label for="user-control" class="form-label">Email or Username</label>
-          <input class="form-control" type="text" name="username" id="user-control" placeholder="first.second@domain.something">
+          <input class="form-control" type="text" name="username" id="user-control" placeholder="first.second@domain.something" autofocus>
         </div>
         <div class="p-5 g-col-6 form floating">
           <label for="password-control" class="form-label">Password</label>

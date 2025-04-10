@@ -4,14 +4,12 @@ window.onload = () => {
  */
   const form = document.getElementById("form");
   form.addEventListener("submit", async (event) => {
-    console.log("I\'m inside the addEventListener function!");
     event.preventDefault();
     try {
       const username = document.getElementById("user-control").value;
       const password = document.getElementById("password-control").value;
       console.log("username: " + username + "\npassword: " + password);
       if (username != '' && password != '') {
-        console.log("I\'m sending data to backend!");
         const account = {
           username: username,
           password: password
@@ -19,7 +17,6 @@ window.onload = () => {
         const url = window.location.href;
         let response = await sendForm(url, account);
         if (response['code'] == 200){
-          console.log(response['url'])
           window.location = url.replace('/login', response['url'])
         }
         else{
@@ -39,8 +36,6 @@ window.onload = () => {
  * @return {Object} - Response body from URL that was POSTed to
  */
 async function sendForm(url, account) {
-  console.log("I\'m inside sendForm function");
-  console.log(JSON.stringify(account));
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -55,7 +50,6 @@ async function sendForm(url, account) {
     }
     else {
       return response.json().then(value => {
-        console.log(value);
         return value;
       });
     }

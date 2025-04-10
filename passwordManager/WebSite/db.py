@@ -1,7 +1,10 @@
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from pymongo.errors import ConnectionFailure
+import hashlib
 from urllib.parse import quote_plus
+
+from werkzeug import Client
 from __inspection__ import currentLine
 
 
@@ -19,12 +22,16 @@ class DataBase:
     ### INITIALIZE DATABASE CLASS
     def initDB(self): 
         self.__uri = f"mongodb://root:password@mongo"
+        #self.__uri = "mongodb://127.0.0.1:27017/"
         myclient = MongoClient(self.__uri)
-        print(currentLine("db"), "myclient: ", myclient.server_info())
         try:
             myclient.admin.command('ping')
             print(currentLine("db"), "Connection success")
             db = myclient["passwordManager"]
+            results = db['User'].find({ "_id":{ '$exists': 'true' }})
+            all_results = list(results)
+            for document in all_results:
+                print(currentLine("db"), document)
             if db["User"] == None:
                 self.__createCollection("User", myclient)
             myclient.close()
@@ -69,13 +76,13 @@ class DataBase:
         
         
     ### GET ALL PASSWORDS OF SPECIFIC ACCOUNT
-    def getPasswords(self, account:list) -> list:
+    def getPasswords(self, username:str) -> list:
         client = MongoClient(self.__uri)
         allItems = []
 
         try:
             database = client["passwordManager"]
-            id_user = database["User"].find_one(account)
+            id_user = database["User"].find_one({"account": username})
             if id_user['_id'] != None:
                 collect = database.get_collection(f"Password_{id_user['_id']}")
                 ### Check if collection is not None
@@ -104,11 +111,12 @@ class DataBase:
         result = None
         try:
             client.admin.command("ping")
-            print("Connection opened")
+            print(currentLine("db"), "Connection opened")
             database = client["passwordManager"] 
             
             print(currentLine("db"), fields[0])
-            id_user = database["User"].find_one(fields[0])
+            print(currentLine("db"), fields[1])
+            id_user = database["User"].find_one({"username":fields[0]})
             if id_user['_id'] != None:
                 collect = database.get_collection(f"Password_{id_user['_id']}")
                 if(collect != None):
@@ -135,32 +143,33 @@ class DataBase:
 
 
     ### DELETE A SPECIFIC PASSWORD BASED BY ACCOUNT
-    def deletePassword(self, account: list, document:list) -> bool:
+    def deletePassword(self, account: str, id:int) -> bool:
         client = MongoClient(self.__uri)
         result = None
 
         try:
             database = client["passwordManager"]
-            id_user = database["User"].find_one(account)
+            id_user = database["User"].find_one({"username": account})
             if id_user['_id'] != None:
                 collect = database.get_collection(f"Password_{id_user['_id']}")
+                old_count = collect.count_documents({})
                 if collect != None:
-                    is_active = collect.find(document)
-                    if is_active.alive:
-                        result = collect.delete_one(document)
-                        if result != None:
-                            collect.update_many(
-                                {"id": 
-                                 {"$exists": 
-                                  "true", "$gt": document["id"]
-                                 }
-                                },
-                                {"$set":
-                                 {"id": document["id"] + 1}
-                                }
-                            )
-                    else:
-                        return False    
+                    toDelete = collect.find({"id": id})
+                    if toDelete != None:
+                        cur_updated = toDelete.next()
+                        for element in list(collect.find({"id": { "$exists": "true", "$gt": cur_updated["id"]}})):
+                            print(element['id'])
+                            cur_updated = collect.find_one_and_update({"id": element["id"]}, {"$set": {"id": int(element["id"]) - 1}})
+                            print(currentLine("db"), cur_updated)
+                            cur_updated["id"] = element["id"] + 1
+                        
+                        result = collect.delete_one({"id": id})
+                        print(currentLine("db"), self.getPasswords(account))
+                        print(currentLine("db"), collect.count_documents({}))
+                        client.close()
+                        return True if collect.count_documents({}) < old_count else False
+            return False 
         except Exception as e:
             print(e)
+            client.close()
             return False

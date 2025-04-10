@@ -5,16 +5,13 @@ services:
       - "27017:27017"
     networks:
       - dbdata
-    env_file: .mongo.env
+    env_file: .docker.env
     restart: always
 
   nginx:
-    image: nginx:latest
-    container_name: nginx-webapp
+    image: nginx:1.27-alpine
     volumes:
       - ./.nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./.nginx/rootCA.crt:/etc/ssl/certs/rootCA.crt
-      - ./.nginx/rootCA.key:/etc/ssl/certs/rootCA.key
     ports:
       - "443:443"
     networks:
@@ -23,15 +20,22 @@ services:
       - password-manager
     environment:
       - TZ=Europe/Rome
+    restart: always
+    secrets:
+      - cert
+      - key
 
   password-manager:
     build: .
     networks:
       - default
       - dbdata
-    restart: on-failure
     environment:
       - TZ=Europe/Rome
+    restart: always
+    secrets:
+      - cert
+      - key
 
 networks:
   dbdata:
@@ -39,3 +43,9 @@ networks:
   
   default:
     name: webapp
+
+secrets:
+  cert:
+    file: ./.nginx/.certs/rootCA.crt
+  key:
+    file: ./.nginx/.certs/rootCA.key
