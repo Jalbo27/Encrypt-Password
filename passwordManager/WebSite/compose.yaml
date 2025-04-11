@@ -30,8 +30,7 @@ services:
     networks:
       - default
       - dbdata
-    environment:
-      - TZ=Europe/Rome
+    env_file: .docker.env
     restart: always
     secrets:
       - cert

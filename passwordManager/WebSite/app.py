@@ -1,17 +1,18 @@
 import werkzeug.exceptions
 from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
-from flask import Flask, render_template, request, make_response, jsonify, session, json
+from flask import Flask, render_template, request, make_response, jsonify, json
 from flask.logging import default_handler
 from logging.config import dictConfig
 from engine import Engine
 from markupsafe import escape
 from __inspection__ import currentLine
+import time
 
 dictConfig({
     'version': 1,
     'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        'format': '['f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}''] %(levelname)s in %(module)s: %(message)s',
     }},
     'handlers': {'wsgi': {
         'class': 'logging.StreamHandler',
@@ -19,7 +20,7 @@ dictConfig({
         'formatter': 'default'
     }},
     'root': {
-        'level': 'INFO',
+        'level': 'DEBUG',
         'handlers': ['wsgi']
     }
 })
@@ -59,16 +60,13 @@ def home_page(account=''):
 @app.route("/homepage/<string:account>", methods=['POST'])
 def uploadPassword(account=''):
     if(request.is_json):
-        print(currentLine("app"), request.headers)
         print(currentLine("app"), "il JSON ricevuto è: ", request.get_json())
-        print(currentLine("app"), "The dictionary of password: ", password_dict)
         if(account == ''):
             return jsonify({'message': 'You have not an account. You have to login before', 'status': 'failed'})
         
         ### CHECK THE ACTION: 'submit', 'delete', 'edit'
         if(request.get_json()['action'] == 'submit'):
             password_dict.append(request.get_json())
-            print(currentLine("app"), password_dict)
             if (responder.sanityPassword(password_dict[-1])):
                 print(currentLine("app")," I\'m here password sanity check passed successfully")
                 password_dict[-1]['id'] += 1
