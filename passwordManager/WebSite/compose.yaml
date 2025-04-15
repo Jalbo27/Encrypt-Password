@@ -45,6 +45,6 @@ networks:
 
 secrets:
   cert:
-    file: ./.nginx/.certs/rootCA.crt
+    file: ./.nginx/.certs/pw-managerRootCA.crt
   key:
     file: ./.nginx/.certs/rootCA.key

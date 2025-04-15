@@ -6,7 +6,7 @@ RUN adduser -Ds /bin/sh -u 1000 app
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
 RUN pip3 install --no-cache --upgrade pip setuptools
-RUN pip3 install --no-cache Flask pymongo==4.12 gunicorn==22.0.0
+RUN pip3 install --no-cache Flask pymongo==4.12 gunicorn==22.0.0 cryptography==39.0.1
 RUN mkdir /home/app/static/ /home/app/templates/
 
 COPY ["*.py", "/home/app/"]

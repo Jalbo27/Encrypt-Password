@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import hashlib
+from cryptography.fernet import Fernet
 import os
 from __inspection__ import currentLine
 
@@ -10,6 +11,8 @@ class DataBase:
     __password = None
     __uri = None
     __db_name = None
+    __key = None
+    __fernet = None
     
     ### Call the initilizator of class
     def __init__(self):
@@ -21,6 +24,9 @@ class DataBase:
         self.__username = os.environ['MONGO_INITDB_ROOT_USERNAME']
         self.__password = os.environ['MONGO_INITDB_ROOT_PASSWORD']
         self.__db_name = os.environ['MONGO_INITDB_DATABASE']
+        self.__key = Fernet.generate_key()
+        self.__fernet = Fernet(self.__key)
+        print(self.__username, self.__password, self.__db_name)
         self.__uri = f"mongodb://{self.__username}:{self.__password}@mongo"
         myclient = MongoClient(self.__uri)
         try:
@@ -41,29 +47,29 @@ class DataBase:
             
     
     ### CREATE COLLECTION IN ATLAS
-    def __createCollection(self, name: str, con: MongoClient) -> bool:
+    def __createCollection(self, username: str, con: MongoClient) -> bool:
         try:
             print(con.admin.command("ping"))
-            con[self.__db_name].create_collection(name)
+            con[self.__db_name].create_collection(username)
             return True
         except ConnectionFailure as e:
             print(e)
             return False
     
     ### CHECK IF THE USER EXISTS OR NOT
-    def account(self, user: str, password: str, is_new: bool) -> bool:
+    def account(self, username: str, password: str, is_new: bool) -> bool:
         result = None
         client = MongoClient(self.__uri)
         try:
             database = client[self.__db_name]
             
             if is_new:
-                found = database["User"].find_one({"username": user})
+                found = database["User"].find_one({"username": username})
                 if found == None:
-                    print(currentLine("db"), f"Not found user called {user} and subscribe this new user")
-                    result = database["User"].insert_one({"username": user, "password": password})
+                    print(currentLine("db"), f"Not found user called {username} and subscribe this new user")
+                    result = database["User"].insert_one({"username": username, "password": self.__fernet.encrypt(password.encode())})
             else:
-                result = database["User"].find_one({"username": user})
+                result = database["User"].find_one({"username": username})
             
             client.close()
             return True if result != None else False
@@ -105,7 +111,7 @@ class DataBase:
 
         
     ### INSERT FIELDS IN ANY TABLE 
-    def insertFields(self, *fields) -> bool:
+    def insertFields(self, username: str, document: list) -> bool:
         client = MongoClient(self.__uri)
         result = None
         try:
@@ -113,14 +119,15 @@ class DataBase:
             print(currentLine("db"), "Connection opened")
             database = client[self.__db_name] 
             
-            id_user = database["User"].find_one({"username":fields[0]})
+            id_user = database["User"].find_one({"username":username})
             if id_user['_id'] != None:
                 collect = database.get_collection(f"Password_{id_user['_id']}")
+                document["password"] = self.__fernet.encrypt(document["password"].encode())
                 if(collect != None):
-                    result = collect.insert_one(fields[1], True)
+                    result = collect.insert_one(document, True)
                 else:
                     self.__createCollection(f"Password_{id_user['_id']}", client)
-                    result = database[f"Password_{id_user['_id']}"].insert_one(fields[1], True)
+                    result = database[f"Password_{id_user['_id']}"].insert_one(document, True)
                 
                 client.close()
                 if result:
