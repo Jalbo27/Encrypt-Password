@@ -8,7 +8,9 @@
 - Flask ---> Framework for python
 - gunicorn == 22.0.0 ---> WSGI Server
 - cryptography == 39.0.1 ---> library for symmetric encryption
-- openssl
+- flask_jwt_extended ---> library for jwt codes management
+- Flask_WTF ---> library for CSRF prevention
+- openssl ---> tool for generating certificates
 - docker [[docker guide](https://docs.docker.com/engine/install/ "Guide to install Docker Engine in multiple Linux OS")]
 
 	The installation of this packages are shown below:

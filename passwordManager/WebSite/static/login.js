@@ -15,13 +15,7 @@ window.onload = () => {
           password: password
         }
         const url = window.location.href;
-        let response = await sendForm(url, account);
-        if (response['code'] == 200){
-          window.location = url.replace('/login', response['url'])
-        }
-        else{
-          alert('Utente inesistente')
-        }
+        await sendForm(url, account);
       }
     } catch (error) {
       console.log(error);
@@ -40,8 +34,10 @@ async function sendForm(url, account) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
+      "Accept": "application/json",
+      "X-CSRF-TOKEN": (document.cookie.split(';')?.find(row => row.startsWith('csrf_access_token='))).replace("csrf_access_token=", "")
     },
+    credentials: 'same-origin',
     body: JSON.stringify(account),
   }).then(response => {
     if (!response.ok) {
@@ -49,9 +45,11 @@ async function sendForm(url, account) {
       throw new Error(errorMessage);
     }
     else {
-      return response.json().then(value => {
-        return value;
-      });
+      if(response.ok){
+        window.location.href = window.location.origin + `/homepage/${account['username']}`;
+      }else if(response.status != 200){
+        alert("Impossibile registrarsi")
+      }
     }
   });
   return response;

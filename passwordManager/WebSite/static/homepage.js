@@ -3,15 +3,6 @@ let url = window.location.href;
 let url_login = window.location.origin + '/login';
 
 window.onload = () => {
-  // $(".toggle-password").click(function () {
-  //   $(this).toggleClass("fa-eye fa-eye-slash");
-  //   var input = $($(this).attr("toggle"));
-  //   if (input.attr("type") == "password") {
-  //     input.attr("type", "text");
-  //   } else {
-  //     input.attr("type", "password");
-  //   }
-  // });
   /**
    * CONTROLLO DELLA LOGIN ESEGUITA DALL'UTENTE
    */
@@ -24,19 +15,11 @@ window.onload = () => {
         const password = document.getElementById("password-control").value;
         if (username != '' && password != '') {
           console.log("I\'m sending data to backend!");
-          console.log(url_login)
           const account = {
             username: username,
             password: password
           }
-          let response = await sendLogin(account);
-          if (response['code'] == 200) {
-            console.log(response['url'])
-            window.location = url_login.replace('/login', response['url'])
-          }
-          else {
-            alert('Utente inesistente')
-          }
+          await sendLogin(account);
         }
       } catch (error) {
         console.log(error);
@@ -89,7 +72,8 @@ window.onload = () => {
         if (responseData['code'] == 200) {
           addNewPassword(responseData['id']);
         }
-        else {
+        else if (responseData['code'] == 401){
+          alert(responseData['message'])
         }
       }
       else {
@@ -107,7 +91,48 @@ window.onload = () => {
   let delbtns = document.getElementsByClassName('btn btn-danger');
   Array.prototype.map.call(editbtns, element => { element.addEventListener("click", modifyElement) });
   Array.prototype.map.call(delbtns, element => { element.addEventListener("click", modifyElement) });
+
+  /**
+   * ADD THE EVENT TO THE EYE VIEW PASSWORD TOGGLE
+   */
+  document.querySelectorAll('.togglePassword').forEach(el => {
+    el.addEventListener('click', e => {
+      let password = el.parentElement.getElementsByClassName('form-control')[0];
+      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+      password.setAttribute('type', type);
+      e.target.classList.toggle('fa-eye-slash');
+    });
+  });
+
+  /**
+   * ADD THE EVENT TO THE EYE VIEW PASSWORD TOGGLE TO THE TABLE
+   */
+  document.querySelectorAll('.togglePassword').forEach(el => {
+    el.addEventListener('click', e => {
+      let password = el.parentElement.getElementsByClassName('password-control')[0];
+      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+      password.setAttribute('type', type);
+      e.target.classList.toggle('fa-eye-slash');
+    });
+  });
 }
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+// async function getCSRFToken(){
+//   const options= {
+//     method: 'POST',
+//     credentials: 'same-origin',
+//     headers:{
+//       'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+//     },
+//   };
+//   const response = await fetch('')
+// }
 
 /**
  * Helper function for POSTing data as JSON with fetch.
@@ -116,30 +141,27 @@ window.onload = () => {
  * @return {Object} - Response body from URL that was POSTed to
  */
 async function sendLogin(account) {
-  // console.log("I\'m inside sendLogin function");
-  // console.log(JSON.stringify(account));
-  // console.log(typeof(url_login));
-  console.log(JSON.stringify(account));
   const response = await fetch(url_login, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
+      "Accept": "application/json",
+      "X-CSRF-TOKEN": (document.cookie.split(';')?.find(row => row.startsWith('csrf_access_token='))).replace("csrf_access_token=", ""),
     },
+    credentials: 'same-origin',
     body: JSON.stringify(account),
   }).then(response => {
     if (!response.ok) {
       const errorMessage = response.text();
       throw new Error(errorMessage);
     }
-    else {
-      return response.json().then(value => {
-        console.log(value);
-        return value;
-      });
+    else if(response.ok && response.status == 200){
+      window.location.href = window.location.origin + `/homepage/${account['username']}`;
+    }
+    else{
+      alert("Impossibile effettuare il login");
     }
   });
-  return response;
 }
 
 /**
@@ -160,22 +182,25 @@ async function sendForm() {
   */
   // console.log("JSON FORMAT: \n" + JSON.stringify(container));
   // console.log(url)
+  //console.log((document.cookie.split(';')?.find(row => row.startsWith('csrf_access_token='))).replace("csrf_access_token=", ""))
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
+      "Accept": "application/json",
+      "X-CSRF-TOKEN": (document.cookie.split(';')?.find(row => row.startsWith('csrf_access_token='))).replace("csrf_access_token=", ""),
     },
+    credentials:'same-origin',
     body: JSON.stringify(container)
-  }).then(response => {
+  }).then(async response => {
     if (!response.ok) {
       const errorMessage = response.text();
+      //alert("é stato impossibile inviare i dati")
       throw new Error(errorMessage);
     }
-    else {
-      return response.json().then(value => {
-        return value;
-      });
+    else if(response.ok){
+      const value = await response.json();
+      return value;
     }
   });
 
@@ -197,8 +222,10 @@ async function modifyElement(e) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Accept-Post": "application/json"
+      "Accept-Post": "application/json",
+      "X-CSRF-TOKEN": (document.cookie.split(';')?.find(row => row.startsWith('csrf_access_token='))).replace("csrf_access_token=", ""),
     },
+    credentials: "same-origin",
     body: JSON.stringify(requestAction)
   }).then(response => {
     if (!response.ok) {
@@ -207,7 +234,6 @@ async function modifyElement(e) {
     }
     else {
       return response.json().then(value => {
-        console.log(value);
         if(value['code'] == 200)
         {
           if (value['message'].includes("deleted")){
@@ -226,13 +252,18 @@ async function modifyElement(e) {
               }
             });
           }
-        }
+        }else if (value['message'].includes("edited")){
+          e.target.textContent = value['new'];
+        }else
+          return ;
       });
     }
   })
 }
 
-
+/**
+ * ADD A NEW LINE TO THE TABLE WITH THE PASSWORD INSERTED BY USER
+ */
 function addNewPassword(id) {
   let table = document.getElementById("table-body");
 
@@ -242,9 +273,13 @@ function addNewPassword(id) {
   let editBtn = document.createElement('button');
   let pwdBtn = document.createElement('button');
   let link_uri = document.createElement('a');
-  pwdBtn.setAttribute("id", "password-btn")
+  pwdBtn.setAttribute("id", "password-btn");
+  pwdBtn.classList.add("form-control");
   pwdBtn.textContent = "•••••••••••";
   pwdBtn.addEventListener('click', (e) => { navigator.clipboard.writeText(container.password) });
+  let eye = document.createElement('i');
+  eye.classList.add("fa", "fa-eye", "fa-eye-slash", "togglePassword");
+  pwdBtn.appendChild(eye);
   link_uri.href = container.uri;
   link_uri.target = "_blank";
   link_uri.textContent = container.uri;

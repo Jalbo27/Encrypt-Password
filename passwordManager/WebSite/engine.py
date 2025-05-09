@@ -50,6 +50,34 @@ class Engine:
         return self.__db.deletePassword(username, id)
     
     
-    ###
+    ### RETRIEVE ALL PASSWORDS
     def getAllPasswords(self, username:str) -> list:
         return self.__db.getPasswords(username)
+    
+    
+    ### ADD JWT TO THE DATABASE
+    def JWT_action(self, account: str, JWT: str, csrf: str, lifetime: float, action: str) -> bool:
+        """
+        Function for manage JWT codes in db:
+        RETURNS: True if action is done correctly or False if there's a problem with any actions
+        
+        PARAMETERS:
+            - account:str ---> name of the user
+            - JWT: str ---> code of JWT
+            - csrf: str ---> token double submitted
+            - lifetime: int ---> session validity of jwt token
+            - action: str ---> what to do with that in jwt: add - revoke - update (or refresh) token
+        """
+        return self.__db.JWTmanage(account, JWT, csrf, lifetime, action)
+
+
+    ### CHECK JWT 
+    def checkJWT(self, JWT):
+        """
+        Function to check the existence and validity of jwt passed by user
+        RETURN: True if jwt exists and it's valid otherwise False
+        
+        PARAMETERS: 
+            - JWT: str ---> JWT token
+        """
+        return self.__db.checkJWT(JWT)

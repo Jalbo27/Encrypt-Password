@@ -14,8 +14,8 @@
     <body data-bs-theme="dark">
         <nav class="navbar navbar-expand-lg bg-body-tertiary" id="nav-bar">
             <div class="container-fluid">
-              <a class="navbar-brand" href="/homepage/">
-                <img src="../static/password_icon.ico" alt="Logo" width="35" height="30" class="d-inline-block align-text-top" href="/homepage/">
+              <a class="navbar-brand" href="{{ url_for('homepage_Page')}}">
+                <img src="../static/password_icon.ico" alt="Logo" width="35" height="30" class="d-inline-block align-text-top" href="{{ url_for('homepage_Page')}}">
                 Password Manager
               </a>
               <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,7 +24,7 @@
               <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="/homepage/">Homepage</a>
+                        <a class="nav-link" href="{{ url_for('homepage_Page')}}">Homepage</a>
                     </li>
                 </ul>
               </div>

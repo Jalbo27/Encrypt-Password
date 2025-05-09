@@ -29,18 +29,18 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('home_page')}}">Homepage</a>
+            <a class="nav-link" href="{{ url_for('homepage_Page')}}">Homepage</a>
           </li>
         </ul>
       </div>
     </div>
   </nav>
   <div class="border rounded-4 border-primary d-flex justify-content-center flex-column" id="box-login">
-    <form class="container text-center" id="form" method="post" href="{{url_for('home_page')}}">
+    <form class="container text-center" id="form" method="post" href="{{url_for('homepage_Page')}}">
       <div class="grid row-gap-6">
         <div class="p-5 g-col-6 form floating">
           <label for="user-control" class="form-label">Email or Username</label>
-          <input class="form-control" type="text" name="username" id="user-control" placeholder="first.second@domain.something">
+          <input class="form-control" type="text" name="username" id="user-control" placeholder="first.second@domain.something" autofocus="">
         </div>
         <div class="p-5 g-col-6 form floating">
           <label for="password-control" class="form-label">Password</label>

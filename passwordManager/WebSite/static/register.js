@@ -10,13 +10,8 @@ window.onload = () => {
     try {
       const username = document.getElementById("user-control").value;
       const password = document.getElementById("password-control").value;
-      console.log("username: " + username + "\npassword: " + password);
       if (username != '' && password != '') {
-        let response = await sendForm({ url }, username, password);
-        if (response['code'] == 200){
-          let destination = window.location.origin + response['url'] + `${username}`;
-          window.location.href = destination
-        }
+        await sendForm({ url }, username, password);
       }
     } catch (error) {
       console.log(error);
@@ -40,16 +35,14 @@ async function sendForm({ url }, username, password) {
       "Accept": "application/json"
     },
     body: JSON.stringify({ 'username': username, 'password': password }),
-  }).then(response => {
-    if (!response.ok) {
-      const errorMessage = response.text();
-      throw new Error(errorMessage);
+   }).then((response)=>{
+      if(response.ok){
+        window.location.href = window.location.origin + `/homepage/${username}`;
+      }else if(response.status != 200){
+        alert("Impossibile registrarsi")
+      }
     }
-    else {
-      return response.json().then(value => {
-        return value;
-      });
-    }
-  });
-  return response;
+    ).catch(function(e){
+        console.log(e);
+    });
 }

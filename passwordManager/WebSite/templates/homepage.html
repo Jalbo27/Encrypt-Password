@@ -14,6 +14,7 @@
   <meta http-equiv="Content-Security-Policy" content="script-src 'self'" />
   <meta http-equiv="Content-Security-Policy" content="object-src 'none'" />
   <link rel="shortcut icon" href="#">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" type="text/css" href="../static/bootstrap/css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="../static/custom_style.css">
   <script type="text/javascript" src="../static/bootstrap/js/bootstrap.js" defer></script>
@@ -34,14 +35,6 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-              aria-expanded="false">File</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Save Password</a></li>
-              <li><a class="dropdown-item" href="#">Load Password</a></li>
-            </ul>
-          </li>
           <li class="nav-item">
             {% if account %}
             <a class="nav-link" href="#">Hello {{ account }}</a>
@@ -68,7 +61,7 @@
                         <div class="mb-3">
                           <label for="message-text" class="col-form-label">Password</label>
                           <input type="password" class="form-control" id="password-control"></input>
-                          <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>    
+                          <i class="fa fa-eye fa-eye-slash togglePassword"></i>
                         </div>
                       </form>
                     </div>
@@ -98,6 +91,9 @@
     </div>
   </nav>
   <form class="row g-3 align-text-top" id="form-element" method="post">
+    {% if csrf_access_token %}
+    <input type="hidden" id="csrf_access_token" value="{{ csrf_access_token }}"/>
+    {% endif %}
     <div class="col-auto form-floating">
       <input type="text" class="form-control" id="floatingInput" name="name-control" placeholder="Name" autofocus>
       <label for="floatingInput">Name</label>
@@ -109,8 +105,8 @@
     <div class="col-auto form-floating">
       <input type="password" class="form-control" id="floatingInput" name="password-control" placeholder="Password"
         aria-describedby="passwordHelpInline">
+      <i class="fa fa-eye fa-eye-slash togglePassword" for="floatingInput"></i>
       <label for="floatingInput">Password</label>
-      <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>    
     </div>
     <div class="col-auto form-floating">
       <input type="url" class="form-control" id="floatingInput" name="uri-control" placeholder="URI:\\">
@@ -144,8 +140,8 @@
           {% if key == 'id' or key == 'name' or key == 'username' %}
           <th scope="col" class="col-1">{{item|e}}</th>
           {% elif key == 'password' %}
-          <th scope="col" class="col-1"><button id="password-btn" type="button">•••••••••••</button>
-            <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>    
+          <th scope="col" class="col-1"><button id="password-btn" class="password-control" type="button">•••••••••••</button>
+            <i class="fa fa-eye fa-eye-slash togglePassword"></i>
           </th>
           {% elif key == 'uri' %}
           <th scope="col" class="col-1"><a href={{item|e}} target="_blank">{{item|e}}</a></th>
