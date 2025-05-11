@@ -76,6 +76,7 @@ class DataBase:
                 user = database["User"].find_one({"username": username})
                 print(currentLine("db"), user)
                 if self.__fernet.decrypt(user["password"]).decode() == password:
+                    print(currentLine("db"), "The decripted password is:", self.__fernet.decrypt(user["password"]).decode())
                     result = True
                     print(currentLine("db"), "Le password coincidono")
             self.__client_connect.close()

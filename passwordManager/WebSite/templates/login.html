@@ -35,6 +35,14 @@
       </div>
     </div>
   </nav>
+  {% if alert %}
+  <div class="alert alert-warning d-flex align-items-center" role="alert">
+    <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+    <div>
+      { alert }
+    </div>
+  </div>
+  {% endif %}
   <div class="border rounded-4 border-primary d-flex justify-content-center flex-column" id="box-login">
     <form class="container text-center" id="form" method="post" href="{{url_for('homepage_Page')}}">
       <div class="grid row-gap-6">

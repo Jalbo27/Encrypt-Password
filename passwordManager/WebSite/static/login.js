@@ -46,7 +46,12 @@ async function sendForm(url, account) {
     }
     else {
       if(response.ok){
-        window.location.href = window.location.origin + `/homepage/${account['username']}`;
+        response.json().then(value =>{
+          if(value["code"] == 200)
+            window.location.href = window.location.origin + `/homepage/${account['username']}`;
+          else
+            alert(value["message"]); 
+        });
       }else if(response.status != 200){
         alert("Impossibile registrarsi")
       }

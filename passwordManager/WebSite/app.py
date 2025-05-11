@@ -78,7 +78,7 @@ def refresh_expiring_jwts(response):
 
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_data):
-    return redirect(url_for("login")), 302
+    return redirect(url_for("login"), code=302, alert="You have been logged out because the session is terminated"), 200
 
 ### LOADS HOMEPAGE WINDOW --- METHOD = 'GET'
 @app.route("/")
@@ -96,7 +96,7 @@ def home_page(account=''):
         try:
             current_user = get_jwt_identity()
             print(currentLine("app"), current_user)
-            print(currentLine("app"), request.cookies.get('access_token_cookie'))
+            print(currentLine("app"), "Il codice JWT dell'utente è: ",request.cookies.get('access_token_cookie'))
             if current_user == account and engine.checkJWT(request.cookies.get('access_token_cookie')):
                 print(currentLine("app"), "gli utenti combaciano")
                 if(password_dict != []):
@@ -171,14 +171,13 @@ def uploadPassword(account=''):
     
 ### LOADS LOGIN PAGE --- METHOD = 'GET'
 @app.route("/login", methods=['GET'])
-def loginPage():
+def loginPage(alert=''):
     print(currentLine("app"),"I\'m inside loginPage function")    
-    return render_template("login.html") 
+    return render_template("login.html", alert=alert) if alert != '' else render_template("login.html")
 
 
 ### CREATE OR LOGIN AN ACCOUNT --- METHOD = 'POST'
 @app.route("/login", methods=['POST'])
-@jwt_required(optional=True)
 def login():
     print(currentLine("app"), " I\'m logging an account")
     if (request.is_json):
@@ -198,7 +197,7 @@ def login():
                     else:
                         print(currentLine("app"), "Login failed")
                         return jsonify({"code": 401, "message": "Bad username or password"}), 200
-                else: return jsonify({"code": 401, "message": "Login failed"}), 200
+                else: return jsonify({"code": 401, "message": "This user does not exist"}), 200
             else:
                 print(currentLine("app"), "Failed request")
                 return jsonify({"code": 401, "message": "Login failed"}), 200
@@ -254,7 +253,7 @@ def register():
 @jwt_required()
 def logoutPage():
     engine.JWT_action(get_jwt()['sub'], get_jwt(), get_jwt()['csrf'], ACCESS_EXPIRES.total_seconds(), "revoke")
-    response = make_response(render_template("logout.html/"), get_jwt())
+    response = make_response(render_template("logout.html/"),get_jwt())
     unset_jwt_cookies(response=response)
     print(currentLine("app"), response.headers)
     return response, 302

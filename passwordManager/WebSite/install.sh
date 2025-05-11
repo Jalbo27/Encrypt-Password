@@ -2,7 +2,7 @@
 #preparing setup of the password manager
 
 stty -echoctl
-PATH_PRODUCT_CERTS="./.nginx/.certs"
+PATH_PRODUCT_CERTS=".nginx/.certs"
 PATH_SYSTEM_CERTS="/etc/ssl/certs"
 certificate=1
 
@@ -86,8 +86,11 @@ function firstInstall
 	
 	echo -e "\nStarting the first installation of Password Manager in your system..."
 	echo -e "\nPreparing directories..."
-	if [ ! -d ./.nginx/ -a ! -d ./.nginx.certs/ ]; then
-		mkdir .nginx .nginx/.certs 
+	if [ ! -d .nginx/ -a ! -d .nginx/.certs/ ]; then
+		echo -e "Directories creation done"
+		mkdir .nginx/ .nginx/.certs/ 
+		cp default.conf .nginx/
+		cp default_https.conf .nginx/
 	fi
 	if [ $certificate == 0 ]; then
 		sed -e '/CMD/c\CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]' -i Dockerfile
@@ -105,7 +108,6 @@ function firstInstall
 	fi
 	
 	echo -e "Generating credentials for mongo...\r"
-	#sleep 2
 	osrelease=$(grep -E '^(ID_LIKE)=' /etc/os-release)
 	rnd_pass=$(LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c 13; echo)
 	rnd_user=$(LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c 13; echo)
@@ -113,7 +115,6 @@ function firstInstall
 	echo "Creation of docker.env file"
 	echo -e "# ENVIRONMENTS VARIABLES\n\nMONGO_INITDB_ROOT_USERNAME=\""$rnd_user"\"\nMONGO_INITDB_ROOT_PASSWORD=\""$rnd_pass"\"\nMONGO_INITDB_DATABASE=\"passwordManager\"\nTZ=Europe/Rome" > .docker.env 
 
-	#sleep 3
 	if [ $certificate == 1 ]; then
 		newCertificate
 	else
@@ -125,14 +126,14 @@ function firstInstall
 
 function newCertificate
 {
-    if [ docker inspect webiste-mongo-1 > /dev/null 2>&1 -a docker inspect website-password-manager-1 > /dev/null 2>&1 -a docker inspect website-nginx-1 > /dev/null 2>&1 ]; then
+    	if [ docker inspect webiste-mongo-1 > /dev/null 2>&1 -a docker inspect website-password-manager-1 > /dev/null 2>&1 -a docker inspect website-nginx-1 > /dev/null 2>&1 ]; then
 		echo "stopping existing services of the product..."
 		docker stop $(docker ps -aqf "name=website-mongo-1")
 		docker stop $(docker ps -aqf "name=website-nginx-1")
 		docker stop $(docker ps -aqf "name=website-password-manager-1")
-    fi
+    	fi
 
-	if [ -e $PATH_SYSTEM_CERTS/pw-managerRootCA.pem ]; then
+    	if [ -e $PATH_SYSTEM_CERTS/pw-managerRootCA.pem ]; then
 		rm $PATH_SYSTEM_CERTS/pw-managerRootCA.pem
 	fi
 	if [ -e /usr/share/ca-certificates/mozilla/pw-managerRootCA.crt ]; then
@@ -147,13 +148,13 @@ function newCertificate
 	if [ -d /usr/share/applications/ca-certificates/mozilla ]; then
 		cp $PATH_PRODUCT_CERTS/pw-managerRootCA.crt /usr/share/ca-certificates/mozilla/
 		ln -s /usr/share/ca-certificates/mozilla/pw-managerRootCA.crt /etc/ssl/certs/pw-managerRootCA.pem
+		cp $PATH_PRODUCT_CERTS/pw-managerRootCA.crt /etc/ssl/certificates
 	else
 		cp $PATH_PRODUCT_CERTS/pw-managerRootCA.crt /etc/ssl/certificates
 	fi
 	
 	# IF EXIST RESTART CONTAINERS
 	echo -e "\nStarting services..."
-#	sleep 5	
 	if [ docker inspect webiste-mongo-1 > /dev/null 2>&1 -a docker inspect website-password-manager-1 > /dev/null 2>&1 -a docker inspect website-nginx-1 > /dev/null 2>&1 ]; then
 		docker start $(docker ps -aqf "name=website-mongo-1")
 		docker start $(docker ps -aqf "name=website-nginx-1")
