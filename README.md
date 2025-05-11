@@ -8,8 +8,7 @@
 - Flask ---> Framework for python
 - gunicorn == 22.0.0 ---> WSGI Server
 - cryptography == 39.0.1 ---> library for symmetric encryption
-- flask_jwt_extended ---> library for jwt codes management
-- Flask_WTF ---> library for CSRF prevention
+- flask_jwt_extended ---> library for jwt codes management and csrf prevention
 - openssl ---> tool for generating certificates
 - docker [[docker guide](https://docs.docker.com/engine/install/ "Guide to install Docker Engine in multiple Linux OS")]
 
@@ -18,7 +17,7 @@
 	sudo apt install python-3.10 openssl pip
  	```
   	```
-	sudo pip install Flask pymongo==4.12 gunicorn==22.0.0 cryptography==39.0.1
+	sudo pip install Flask flask_jwt_extended pymongo==4.12 gunicorn==22.0.0 cryptography==39.0.1
 	```
 ---
 ### INSTALLATION:
@@ -34,7 +33,7 @@ The are multiple ways to install software:
 	- Access to your browser and search  and goes
 	- Have fun
 
-2. Source code:
+2. Installation script:
 	- Download the project
 	- Inside the WebSite folder there is a script named ` install.sh `
 	- Execute the script via **` sudo `** or from **root** user
