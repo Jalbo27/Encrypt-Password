@@ -96,15 +96,12 @@ function firstInstall
 		sed -e '/CMD/c\CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]' -i Dockerfile
 		sed -e 's|      - ./.nginx/default.conf:/etc/nginx/conf.d/default.conf|      - ./.nginx/default_https.conf:/etc/nginx/conf.d/default.conf|' -i compose.yaml
 		sed '/secrets\|(file)\|key\|cert/s/^/#/g' -i compose.yaml
-		sed '/443/c\- "80:80"' -i compose.yaml
-		sed '/http-equiv/s/^/<!--/g' -i templates/homepage.html templates/register.html
-		sed '/http-equiv/s/$/-->/g' -i templates/homepage.html templates/register.html
+		#sed '/443/c\     - "80:80"' -i compose.yaml
 	else
 		sed -e '/CMD/c\CMD ["gunicorn", "--certfile=/run/secrets/cert", "--keyfile=/run/secrets/key", "-b", "0.0.0.0:8000", "app:app"]' -i Dockerfile
 		sed -e 's|      - ./.nginx/default_https.conf:/etc/nginx/conf.d/default.conf|      - ./.nginx/default.conf:/etc/nginx/conf.d/default.conf|' -i compose.yaml
 		sed '/secrets\|(file)\|key\|cert/s/^#*//g' -i compose.yaml
-		sed '/80/c\- "443:443"' -i compose.yaml
-		sed '/http-equiv/s/^/^<!--*//g' -i templates/homepage.html
+		#sed '/80/c\     - "443:443"' -i compose.yaml
 	fi
 	
 	echo -e "Generating credentials for mongo...\r"

@@ -78,7 +78,7 @@ def refresh_expiring_jwts(response):
 
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_data):
-    return redirect(url_for("login"), code=302, alert="You have been logged out because the session is terminated"), 200
+    return redirect(url_for("login", alert="You have been logged out because the session is terminated"), code=307)
 
 ### LOADS HOMEPAGE WINDOW --- METHOD = 'GET'
 @app.route("/")
@@ -100,7 +100,7 @@ def home_page(account=''):
             if current_user == account and engine.checkJWT(request.cookies.get('access_token_cookie')):
                 print(currentLine("app"), "gli utenti combaciano")
                 if(password_dict != []):
-                    return render_template("homepage.html", account=escape(account), passwords=password_dict)
+                    return render_template("homepage.html", account=escape(account), passwords=engine.getAllPasswords(account))
                 else:
                     return render_template("homepage.html", account=escape(account))
             else:
@@ -173,7 +173,8 @@ def uploadPassword(account=''):
 @app.route("/login", methods=['GET'])
 def loginPage(alert=''):
     print(currentLine("app"),"I\'m inside loginPage function")    
-    return render_template("login.html", alert=alert) if alert != '' else render_template("login.html")
+    if alert != '': return render_template("login.html", alert=alert)
+    else: return render_template("login.html")
 
 
 ### CREATE OR LOGIN AN ACCOUNT --- METHOD = 'POST'
