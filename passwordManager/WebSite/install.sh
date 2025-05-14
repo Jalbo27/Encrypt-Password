@@ -89,8 +89,8 @@ function firstInstall
 	if [ ! -d .nginx/ -a ! -d .nginx/.certs/ ]; then
 		echo -e "Directories creation done"
 		mkdir .nginx/ .nginx/.certs/ 
-		cp default.conf .nginx/
-		cp default_https.conf .nginx/
+		mv default.conf .nginx/
+		mv default_https.conf .nginx/
 	fi
 	if [ $certificate == 0 ]; then
 		sed -e '/CMD/c\CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]' -i Dockerfile

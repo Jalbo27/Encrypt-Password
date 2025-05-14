@@ -27,7 +27,7 @@ dictConfig({
     }
 })
 
-ACCESS_EXPIRES=timedelta(minutes=1)
+ACCESS_EXPIRES=timedelta(minutes=120)
 
 app = Flask(__name__)
 app.secret_key = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(13))
@@ -78,7 +78,7 @@ def refresh_expiring_jwts(response):
 
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_data):
-    return redirect(url_for("login", alert="You have been logged out because the session is terminated"), code=307)
+    return redirect(url_for("login", code=307)) #alert="You have been logged out because the session is terminated"), code=307)
 
 ### LOADS HOMEPAGE WINDOW --- METHOD = 'GET'
 @app.route("/")

@@ -1,63 +1,13 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" class="html__responsive">
-
-<head>
-  <title>Password Manager | Subscribe</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Password Manager for users, download and upload password">
-  <meta http-equiv="Content-Security-Policy" content="default-src https:"/>
-  <meta http-equiv="Content-Security-Policy" content="object-src 'none'"/>
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self'"/>
-  <link rel="shortcut icon" href="#">
-  <link rel="stylesheet" type="text/css" href="../static/bootstrap/css/bootstrap.css">
+{% extends "logreg_template.html" %}
+{% block title %}Password Manager | Register{% endblock %}
+{% block head %}
+  {{ super() }}
   <link rel="stylesheet" type="text/css" href="../static/login.css">
-  <script type="text/javascript" src="../static/bootstrap/js/bootstrap.js"></script>
   <script type="text/javascript" src="../static/register.js"></script>
-</head>
+{% endblock %}
 
-<body data-bs-theme="dark" style="overflow-x: hidden;">
-  <nav class="navbar navbar-expand-lg bg-body-tertiary" id="nav-bar">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">
-        <img src="../static/password_icon.ico" alt="Logo" width="35" height="30" class="d-inline-block align-text-top"
-          href="/">
-        Password Manager
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('homepage_Page')}}">Homepage</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  <div class="border rounded-4 border-primary d-flex justify-content-center flex-column" id="box-login">
-    <form class="container text-center" id="form" method="post">
-      <div class="grid row-gap-6">
-        <div class="p-5 g-col-6 form floating">
-          <label for="user-control" class="form-label">Email or Username</label>
-          <input class="form-control" type="text" name="username" id="user-control" placeholder="first.second@domain.something" autofocus>
-        </div>
-        <div class="p-5 g-col-6 form floating">
-          <label for="password-control" class="form-label">Password</label>
-          <input class="form-control" id="password-control" name="password" type="password" placeholder="Password">
-          <div id="passwordHelpBlock" class="form-text">
-            Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces,
-            special characters, or emoji.
-          </div>
-        </div>
-        <div class="p-1 g-col-4">
-          <button class="btn btn-primary btn-sm" type="submit" id="Button">Register</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</body>
-
-</html>
+{% block button_label %}Register{% endblock %}
+{% block label %}If you already have an account  <a href="{{ url_for('login')}}" target="_self">Login Now!</a>{% endblock %}
+{% block body %}
+  {{super()}}
+{% endblock %}

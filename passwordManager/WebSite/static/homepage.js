@@ -14,7 +14,6 @@ window.onload = () => {
         const username = document.getElementById("user-control").value;
         const password = document.getElementById("password-control").value;
         if (username != '' && password != '') {
-          console.log("I\'m sending data to backend!");
           const account = {
             username: username,
             password: password
@@ -58,13 +57,6 @@ window.onload = () => {
       password: password,
       uri: uri
     };
-
-    // console.log('name: ' + container.name);
-    // console.log('username: ' + container.username);
-    // console.log('password: ' + container.password);
-    // console.log('uri: ' + container.uri);
-    // console.log(container);
-    // console.log('I\'m under submit event');
 
     try {
       if (name_pass != '' && username != '' && password != '' && uri != '') {
@@ -115,6 +107,28 @@ window.onload = () => {
       e.target.classList.toggle('fa-eye-slash');
     });
   });
+
+  /**
+   * GENERATE RANDOM PASSWORD
+   */
+  let dice_generator = document.getElementById('button-addon1-control');
+  dice_generator.addEventListener('click', () =>{
+    document.getElementsByName("password-control")[0].value = Math.random().toString(36).substring(2,20); 
+  });
+
+  /**
+   * PASSWORD TOGGLE VIEW
+   */
+  let eye_toggle = document.getElementsByName("eye-pwd-control")[0];
+  eye_toggle.addEventListener('click', () => {
+    let password = document.getElementsByName('password-control')[0];
+    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+    password.setAttribute('type', type);
+    if (type == 'text')
+      document.getElementById('eye-toggle').classList.replace("bi-eye-slash", "bi-eye");
+    else
+      document.getElementById('eye-toggle').classList.replace("bi-eye", "bi-eye-slash");
+  });
 }
 
 function getCookie(name) {
@@ -122,17 +136,6 @@ function getCookie(name) {
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop().split(';').shift();
 }
-
-// async function getCSRFToken(){
-//   const options= {
-//     method: 'POST',
-//     credentials: 'same-origin',
-//     headers:{
-//       'X-CSRF-TOKEN': getCookie('csrf_access_token'),
-//     },
-//   };
-//   const response = await fetch('')
-// }
 
 /**
  * Helper function for POSTing data as JSON with fetch.
@@ -180,9 +183,6 @@ async function sendForm() {
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
    * 
   */
-  // console.log("JSON FORMAT: \n" + JSON.stringify(container));
-  // console.log(url)
-  //console.log((document.cookie.split(';')?.find(row => row.startsWith('csrf_access_token='))).replace("csrf_access_token=", ""))
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -195,7 +195,6 @@ async function sendForm() {
   }).then(async response => {
     if (!response.ok) {
       const errorMessage = response.text();
-      //alert("é stato impossibile inviare i dati")
       throw new Error(errorMessage);
     }
     else if(response.ok){
@@ -273,14 +272,31 @@ function addNewPassword(id) {
   let editBtn = document.createElement('button');
   let pwdBtn = document.createElement('button');
   let link_uri = document.createElement('a');
+  let eyeBtn = document.createElement('button');
+  let svgImg = document.createElement('i');
+  eyeBtn.classList.add("btn", "btn-outline-secondary");
+  eyeBtn.setAttribute("type", "button");
+  eyeBtn.setAttribute("id", "eye-toggle");
+  eyeBtn.style.border = "none";
+  svgImg.classList.add("bi", "bi-eye-slash");
+  eyeBtn.appendChild(svgImg);
   pwdBtn.setAttribute("id", "password-btn");
   pwdBtn.classList.add("form-control");
   pwdBtn.textContent = "•••••••••••";
   pwdBtn.addEventListener('click', (e) => { navigator.clipboard.writeText(container.password) });
-  let eye = document.createElement('i');
-  eye.classList.add("fa", "fa-eye", "fa-eye-slash", "togglePassword");
-  pwdBtn.appendChild(eye);
+  eyeBtn.addEventListener('click', (e) => {
+    if(eyeBtn.classList.contains("bi-eye-slash")){
+      console.log(pwdBtn.textContent);
+      pwdBtn.textContent = container.password;
+      eyeBtn.classList.replace("bi-eye-slash", "bi-eye");
+    }else{
+      console.log(pwdBtn.textContent);
+      pwdBtn.textContent = "•••••••••••";
+      eyeBtn.classList.replace("bi-eye", "bi-eye-slash");
+    }
+  });
   link_uri.href = container.uri;
+
   link_uri.target = "_blank";
   link_uri.textContent = container.uri;
   delBtn.classList.add("btn", "btn-danger");
@@ -313,6 +329,7 @@ function addNewPassword(id) {
   line.childNodes[1].textContent = container.name;
   line.childNodes[2].textContent = container.username;
   line.childNodes[3].appendChild(pwdBtn);
+  line.childNodes[3].appendChild(eyeBtn);
   line.childNodes[4].appendChild(link_uri);
   line.childNodes[5].appendChild(editBtn);
   line.childNodes[6].appendChild(delBtn);

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" class="html__responsive">
+    <head>
+        {% block head %}
+        <title>{% block title %}{% endblock %}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta http-equiv="Content-Security-Policy" content="default-src https:" />
+        <meta http-equiv="Content-Security-Policy" content="object-src 'none'" />
+        <meta http-equiv="Content-Security-Policy" content="script-src 'self'" />    
+        <meta name="X-Content-Type-Options" content="nosniff">
+        <meta name="X-Frame-Options" content="DENY">
+        <meta name="X-XSS-Protection" content="1; mode=block">
+        <link rel="shortcut icon" href="#">
+        <link rel="stylesheet" type="text/css" href="../static/bootstrap/css/bootstrap.css">
+        <script type="text/javascript" src="../static/bootstrap/js/bootstrap.js"></script>
+        {% endblock %}
+    </head>
+
+    <body data-bs-theme="dark">
+        {%block body%}
+        {% endblock %}
+    </body>
+</html>
