@@ -62,9 +62,9 @@ function usage
 	-h, 	--help			Get Help informations about the script.
 	-i,	--install		First installation of the product, also install a custom certificate for this specific machine.
 		--new-certificate	Install new certificate for the product only in this machine!.
-	-c, 	--certificate		Specific certificate file [*.pkcs, *.crt, *.pem].
-	-k, 	--certificate-key	Specify the key of the certificate passed by the other parameter (required --new-certificate parameter).
-	--no-certificate		Specify that the program runs only in https without certificate (requires -i|--install option).
+	-c, 	--cert			Specific certificate file [*.pkcs, *.crt, *.pem].
+	-k, 	--cert-key		Specify the key of the certificate passed by the other parameter (required --new-certificate parameter).
+	--http				Specify that the program runs only in http without certificate (requires -i|--install option).
 	
 EXAMPLES:
 	./install.sh OR ./install.sh -i|--install			--> First installation with a valid auto generated certificate.
@@ -116,6 +116,7 @@ function firstInstall
 		newCertificate
 	else
 		echo -e "\nStarting services..."
+		time=$(timedatectl)
 		docker compose up -d --build > /dev/null 2>&1
 	fi
 }
@@ -178,8 +179,7 @@ function installCertificate
 	else
 		echo -e "\nYou have to specify a file [*.pem, *.crt, *.pkcs] or a path to the file"
 		echo -e "\nExample:\n"
-		echo -e "\n./install --first --certificate file.crt|pem|pkcs"
-		echo -e	"\n./install --first --certificate /path/to/certificate.crt|pem|pkcs"	
+		echo -e	"\n./install --install --cert /path/to/certificate.crt|pem|pkcs"	
 	fi
 }
 
@@ -193,9 +193,9 @@ function installCertificateKey
 	else
 		echo -e "\nYou have to specify a key bind with the cert or a path to the file -- [*.key]"
 		echo -e "\nExample:\n"
-		echo -e "\n./install --first -c|--certificate <filename>.crt|pem|pkcs -k|--certificate-key <filename>.key"
-		echo -e	"\n./install --first -c|--certificate /path/to/certificate.crt|pem|pkcs -k|--certificate-key /path/to/key.key"
-		echo -e "\n./install --first -k|--certificate-key"
+		echo -e "\n./install --first -c|--cert <filename>.crt|pem|pkcs -k|--certificate-key <filename>.key"
+		echo -e	"\n./install --first -c|--cert /path/to/certificate.crt|pem|pkcs -k|--certificate-key /path/to/key.key"
+		echo -e "\n./install --first -k|--cert-key"
 	fi
 }
 
@@ -215,7 +215,7 @@ while [[ $# -gt 0  ]]; do
 	    ;;
 		-i|--install)
 			if [ ! -z $2 ]; then
-				if [ $2 == "--no-certificate" ]; then
+				if [ $2 == "--http" ]; then
 					certificate=0
 				else
 					certificate=1
@@ -225,16 +225,16 @@ while [[ $# -gt 0  ]]; do
 			firstInstall
 			exit 1
 	    ;;
-		--no-certificate)
+		--http)
 			echo "Requires to be with --install option."
 			exit 1
 		;;
-		-c|--certificate)
+		-c|--cert)
 			checkRequisites
 			installCertificate
 			shift
 	    ;;
-		-k|--certificate-key)
+		-k|--cert-key)
 			checkRequisites
 			installCertificateKey
 			shift

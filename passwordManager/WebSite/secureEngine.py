@@ -18,7 +18,7 @@ class Secure:
         #cpusername = username.translate(self.__translation_table)
         #cppassword = password.translate(self.__translation_table)
         #cpuri = uri.translate(self.__translation_table)
-        is_match = re.match('[\w\W]{8,}', password)
+        #is_match = re.match('[\w\W]{8,}', password)
         # print(f"cpname - name:          {cpname} - {name}", True if cpname == name else False)
         # print(f"cpusername - username:  {cpusername} - {username}", True if cpusername == username else False)
         # print(f"cppassword - password:  {cppassword} - {password}", True if cppassword == password else False)

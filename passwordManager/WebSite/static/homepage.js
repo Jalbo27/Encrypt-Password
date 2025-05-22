@@ -25,7 +25,6 @@ window.onload = () => {
       }
     });
   }
-
   /**
    * CONTROLLO LATO BACKEND DEI DATI INSERITI DALL'UTENTE E AGGIUNTA IN TABELLA DEI NUOVI CAMPI
    */
@@ -197,7 +196,7 @@ async function sendForm() {
       const errorMessage = response.text();
       throw new Error(errorMessage);
     }
-    else if(response.ok){
+    else if(response.status == 100){
       const value = await response.json();
       return value;
     }

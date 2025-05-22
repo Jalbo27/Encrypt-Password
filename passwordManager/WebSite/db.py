@@ -26,6 +26,7 @@ class DataBase:
         self.__username = os.environ['MONGO_INITDB_ROOT_USERNAME']
         self.__password = os.environ['MONGO_INITDB_ROOT_PASSWORD']
         self.__db_name = os.environ['MONGO_INITDB_DATABASE']
+        
         self.__jwt_db_name = 'MONGO_JWT_DATABASE'
         self.__key = Fernet.generate_key()
         self.__fernet = Fernet(self.__key)
@@ -187,7 +188,7 @@ class DataBase:
         
     
     ### ARCHIVE JWT BOUND WITH THE OBJECT ID OF THE USER
-    def JWTmanage(self, account: str, JWT: str, csrf: str, lifetime: float, action: str) -> bool:
+    def JWTRevoke(self, account: str, JWT: str, csrf: str, lifetime: float, action: str) -> bool:
         """
         Function for manage JWT codes in db:
         RETURNS: True if action is done correctly or False if there's a problem with any actions
@@ -197,7 +198,7 @@ class DataBase:
             - JWT: str ---> code of JWT
             - csrf: str ---> token double submitted
             - lifetime: int ---> session validity of jwt token
-            - action: str ---> what to do with that in jwt: add - revoke - update (or refresh) token
+            - action: str ---> what to do with that in jwt: add - revoke - check (or refresh) token
         """
         self.__client_connect = MongoClient(self.__uri)
         self.__jwt_connect = MongoClient(self.__uri)
@@ -225,7 +226,7 @@ class DataBase:
                 else:
                     print(currentLine("db"), f"This user: {account} doesn't exist")
                     return False
-            elif action == "revoke":
+            if action == "revoke":
                 if id_user['_id'] != None:
                     jwt_collect = jwt_db.get_collection("JWT_revoke")
                     if(jwt_collect == None):
@@ -237,9 +238,7 @@ class DataBase:
                     if  jwt_collect != None:
                         jwt_collect.delete_one({"_id": id_user['_id']})
                         print(currentLine("db"), "JWT token deleted from the table")
-                        documents = list(jwt_collect.find())
-                        for document in documents: 
-                            print( currentLine("db"), document)
+
                     else: return False
                     self.__client_connect.close()
                     self.__jwt_connect.close()
@@ -247,6 +246,37 @@ class DataBase:
                 else:
                     print(currentLine("db"), f"This user: {account} doesn't exist")
                     return False
+            elif action == "check":
+                if id_user['_id'] != None:
+                    jwt_collect = jwt_db.get_collection("JWT_revoke")
+                    if(jwt_collect == None):
+                        print(currentLine("db"), "JWT_revoke does not exist...")
+                        return False
+                    
+                    jwt_revoked = jwt_collect.find_one({"_id_user": id_user['_id'], "jwt_code": JWT})
+                    if  jwt_revoked != None:
+                        print(currentLine("db"), "JWT token was been revoked so the operation is not allowed")
+                        return False
+                    else: 
+                        return True
+                else:
+                    print(currentLine("db"), f"This user: {account} doesn't exist")
+                    return False
+            elif action == "update":
+                if id_user['_id'] != None:
+                    jwt_collect = jwt_db.get_collection("JWT_collection")
+                    if(jwt_collect == None):
+                        print(currentLine("db"), "JWT_collection does not exist...")
+                        return False
+                    jwt_collect.update_one({"_id": id_user['_id']}, {"$set": {"jwt_code": JWT, "csrf_token": csrf}})
+                    print(currentLine("db"), "JWT updated in the table successfully!")
+                    self.__client_connect.close()
+                    self.__jwt_connect.close()
+                    return True
+                else:
+                    print(currentLine("db"), f"This user: {account} doesn't exist")
+                    return False
+
             else: return False
         except Exception as e:
             print(currentLine("db"), e)

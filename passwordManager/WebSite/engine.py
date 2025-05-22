@@ -56,7 +56,7 @@ class Engine:
     
     
     ### ADD JWT TO THE DATABASE
-    def JWT_action(self, account: str, JWT: str, csrf: str, lifetime: float, action: str) -> bool:
+    def JWT_action(self, account: str, JWT: str, csrf: str, lifetime: float, action:str) -> bool:
         """
         Function for manage JWT codes in db:
         RETURNS: True if action is done correctly or False if there's a problem with any actions
@@ -68,7 +68,7 @@ class Engine:
             - lifetime: int ---> session validity of jwt token
             - action: str ---> what to do with that in jwt: add - revoke - update (or refresh) token
         """
-        return self.__db.JWTmanage(account, JWT, csrf, lifetime, action)
+        return self.__db.JWTRevoke(account, JWT, csrf, lifetime, action)
 
 
     ### CHECK JWT 
