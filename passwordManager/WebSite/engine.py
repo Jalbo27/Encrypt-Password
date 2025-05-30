@@ -35,10 +35,10 @@ class Engine:
 
 
     ### Manage login operations (new o log a user)
-    def account(self, name: str, password: str, is_new):
+    def account(self, is_new: bool, name: str, password = ''):
         self.__security.checkInjection(name)
         self.__security.checkInjection(password)
-        return self.__db.account(name, password, is_new)
+        return self.__db.account(is_new, name, password)
         
     ### Call account class to store a new password
     def addPassword(self, username: str, line_password: list) -> bool:

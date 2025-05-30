@@ -1,5 +1,5 @@
 import string, random, werkzeug.exceptions, time
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask, render_template, request, make_response, jsonify, json, url_for, redirect
@@ -50,36 +50,18 @@ app.config.update(
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=False,
     SESSION_COOKIE_SAMESITE='None',
-    PERMANENT_SESSION_LIFETIME=ACCESS_EXPIRES
-)
+    PERMANENT_SESSION_LIFETIME=ACCESS_EXPIRES)
 
 jwt = JWTManager(app)
 
 engine = Engine()
 password_dict = []
 
-### REFRESH JWT TOKENS
-@app.after_request
-def refresh_expiring_jwts(response):
-    try:
-        exp_timestamp = get_jwt()["exp"]
-        now = datetime.now(timezone.utc)
-        target_timestamp = datetime.timestamp(now + timedelta(minutes=120))
-        if target_timestamp > exp_timestamp:
-            access_token = create_access_token(identity=get_jwt_identity())
-            set_access_cookies(response, access_token)
-            return response
-        else:
-            print(currentLine("app"), "Token expired")
-            return redirect(url_for("login"))
-    except (RuntimeError, KeyError):
-        # Case where there is not a valid JWT. Just return the original response
-        return response
 
-
+### THE TOKEN IS EXPIRED AND REDIRECTS TO LOGIN PAGE
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_data):
-    print(currentLine("app"), "Token expired")
+    print(currentLine("app", "EXPIRED_TOKEN"), "Token expired")
     return redirect(url_for("login", code=307)) #alert="You have been logged out because the session is terminated"), code=307)
 
 ### LOADS HOMEPAGE WINDOW --- METHOD = 'GET'
@@ -91,29 +73,31 @@ def homepage_Page():
 
 ### LOADS HOMEPAGE WINDOW WITH AN AUTHENTICATED ACCOUNT --- METHOD = 'GET' 
 @app.route("/homepage/<string:account>", methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def home_page(account=''):
-    print(currentLine("app"), request.headers)
-    if account != '':
+    if account != '' and engine.account(False, account):
         try:
             current_user = get_jwt_identity()
-            print(currentLine("app"), current_user)
+            print(currentLine("app", "HOMEPAGE"), current_user)
             #print(currentLine("app"), "Il codice JWT dell'utente è: ",request.cookies.get('access_token_cookie'))
             if current_user == account and engine.checkJWT(request.cookies.get('access_token_cookie')):
-                print(currentLine("app"), "gli utenti combaciano")
+                print(currentLine("app", "HOMEPAGE"), "Users match")
                 password_dict = engine.getAllPasswords(account)
                 if(password_dict != []):
-                    print(currentLine("app"), "I\'m here")
+                    print(currentLine("app", "HOMEPAGE"), "User has passwords")
                     return render_template("homepage.html", account=escape(account), passwords=password_dict)
                 else:
-                    print(currentLine("app"), "I\'m here but no passwords account::::", account)
+                    print(currentLine("app", "HOMEPAGE"), f'The account {account} has no passwords')
                     return render_template("homepage.html", account=account)
             else:
-                print(currentLine("app"), "gli utenti non combaciano")
+                print(currentLine("app", "HOMEPAGE", "ERROR"), "Users do not match")
                 return redirect(url_for("login"))
         except Exception as e:
-            print(currentLine("app"), e)
+            print(currentLine("app", "HOMEPAGE", "ERROR"), e)
             return redirect(url_for("login"))
+    else:
+        print(currentLine("app", "HOMEPAGE", "ERROR"), "Account not found")
+        return redirect(url_for("login"))
 
 
 ### UPLOAD THE PASSWORD INTO TABLE --- METHOD = 'POST'
@@ -122,7 +106,7 @@ def home_page(account=''):
 @jwt_required()
 def uploadPassword(account=''):
     if(request.is_json):
-        print(currentLine("app"), "JSON received and is valid")
+        print(currentLine("app", "HOMEPAGE"), "JSON received and is valid")
         if(account == ''):
             return jsonify({"message": "You have not an account. You have to login before", "code": 401}), 200
         response = None
@@ -131,25 +115,25 @@ def uploadPassword(account=''):
             if(request.get_json()['action'] == 'submit'):
                 password_dict.append(request.get_json())
                 if (engine.sanityPassword(password_dict[-1])):
-                    print(currentLine("app"),"I\'m here password sanity check passed successfully")
+                    print(currentLine("app", "HOMEPAGE"),"Password sanity check passed successfully")
                     password_dict[-1]['id'] += 1
                     del password_dict[-1]['action']
                     if (engine.addPassword(account, password_dict[-1])):
-                        print(password_dict[-1])
                         del password_dict[-1]['_id']
-                        return jsonify({"id": password_dict[-1]['id'], "message": "Password added successfully", "code": 200}), 100
+                        #print(currentLine("app"), password_dict[-1])
+                        return jsonify({"id": password_dict[-1]['id'], "message": "Password added successfully", "code": 200}), 200
                     else:
-                        return jsonify({"message": "failed to load password or there are problems in some fields", "code": 4117}), 200
+                        return jsonify({"message": "Failed to load password or there are problems in some fields", "code": 4117}), 200
                 else:
-                    return jsonify({"message": "failed to load password or there are problems in some fields", "code": 4117}), 200
+                    return jsonify({"message": "Failed to load password or there are problems in some fields", "code": 4117}), 200
                 
             ### DELETE: Delete password of the current account
             elif (request.get_json()['action'] == 'delete'):
                 if engine.deletePassword(account, int(request.get_json()['id'])):
-                    print(currentLine("app"), "password deleted")
-                    return jsonify({"message": "Password deleted successfully", "code": 200}), 100
+                    print(currentLine("app", "HOMEPAGE"), "password deleted")
+                    return jsonify({"message": "Password deleted successfully", "code": 200}), 200
                 else:
-                    print(currentLine("app"), "Password was not delete")
+                    print(currentLine("app", "HOMEPAGE", "ERROR"), "Password was not delete")
                     return jsonify({"message": "Error to delete the password", "code": 400}), 200
             ### EDIT: Edit a password of the current account
             elif (request.get_json()['action'] == 'edit'):
@@ -159,66 +143,70 @@ def uploadPassword(account=''):
                     return jsonify({"message": "Error to modify the password", "code": 400}), 200
             ### Wrong request
             else:
-                print(currentLine("app"), request.headers, "\n")
-                print(currentLine("app"), "Bad request")
+                print(currentLine("app", "HOMEPAGE"), request.headers, "\n")
+                print(currentLine("app", "HOMEPAGE", "ERROR"), "Bad request")
                 return render_template("homepage.html")
         else:
             return jsonify({"message": "You have not an account. You have to login before", "code": 401}), 200
     ### The request sent is not json media type
     else:
-        print(currentLine("app"), request.headers, "\n")
-        print(currentLine("app"), "It is not a json media type")
+        print(currentLine("app", "HOMEPAGE"), request.headers, "\n")
+        print(currentLine("app", "HOMEPAGE", "ERROR"), "It is not a json media type")
         return render_template("homepage.html")
     
     
 ### LOADS LOGIN PAGE --- METHOD = 'GET'
 @app.route("/login", methods=['GET'])
 def loginPage(alert=''):
-    print(currentLine("app"), request.headers)
-    print(currentLine("app"),"Login page rendered")    
+    print(currentLine("app", "LOGIN"),"Login page rendered")    
     if alert != '': return render_template("login.html", alert=alert)
     else: return render_template("login.html")
 
 
 ### CREATE OR LOGIN AN ACCOUNT --- METHOD = 'POST'
 @app.route("/login", methods=['POST'])
+@jwt_required(optional=True)
 def login():
-    print(currentLine("app"), " I\'m logging an account")
+    print(currentLine("app", "LOGIN"), "User is trying to login")
     if (request.is_json):
-        print(currentLine("app"), request.get_json())
+        print(currentLine("app", "LOGIN"), request.get_json())
         try:
             if(request.get_json() != None):
                 username = request.get_json()['username']
                 password = request.get_json()['password']
                 ### CHECK IF USER EXISTS
-                if engine.account(username, password, False):
-                    ### ADD JWT CODE + CSRF TOKEN TO THE DATABASE
+                if engine.account(False, username, password=password):
+                    ### CREATING A JWT TOKEN
                     used_token = request.cookies.get('access_token_cookie')
-                    if(engine.JWT_action(username, used_token, get_csrf_token(used_token), ACCESS_EXPIRES.total_seconds(), "check")):
-                        access_token = create_access_token(identity=username, fresh=ACCESS_EXPIRES)
-                        print(currentLine("app"), "Token fresh created")
-                        resp = jsonify({"access_token": access_token, "message": "login success", "code": 200})
-                        set_access_cookies(response=resp, encoded_access_token=access_token)
-                        engine.JWT_action(username, access_token, get_csrf_token(access_token), ACCESS_EXPIRES.total_seconds(), "update")
-                        print(currentLine("app"), "Utente loggato correttamente")
-                        return resp
+                    access_token = create_access_token(identity=username, expires_delta=ACCESS_EXPIRES)
+                    print(currentLine("app", "LOGIN"), "Token created")
+                    resp = jsonify({"access_token": access_token, "message": "login success", "code": 200})
+                    set_access_cookies(response=resp, encoded_access_token=access_token)
+
+                    if used_token is None:
+                        print(currentLine("app", "LOGIN"), "No previous token found, creating a new one")
+                        engine.JWT_action(username, access_token, get_csrf_token(access_token), ACCESS_EXPIRES.total_seconds(), "add")
+                        print(currentLine("app", "LOGIN"), "JWT Token added")
                     else:
-                        access_token = create_access_token(identity=username, expires=ACCESS_EXPIRES)
-                        print(currentLine("app"), "Token created")
-                        resp = jsonify({"access_token": access_token, "message": "login success", "code": 200})
-                        set_access_cookies(response=resp, encoded_access_token=access_token)
-                        engine.JWT_action(username, access_token, get_csrf_token(access_token), ACCESS_EXPIRES.total_seconds(), "update")
-                        print(currentLine("app"), "Utente loggato correttamente")
-                        return resp
+                        ### CHECK IF THE JWT TOKEN IS ALREADY IN THE DATABASE AND ADD JWT CODE + CSRF TOKEN TO THE DATABASE
+                        if(engine.JWT_action(username, used_token, get_csrf_token(used_token), ACCESS_EXPIRES.total_seconds(), "check")):
+                            engine.JWT_action(username, access_token, get_csrf_token(access_token), ACCESS_EXPIRES.total_seconds(), "update")
+                            print(currentLine("app", "LOGIN"), "JWT Token updated")
+                        # else:
+                        #     engine.JWT_action(username, access_token, get_csrf_token(access_token), ACCESS_EXPIRES.total_seconds(), "add")
+                        #     print(currentLine("app", "LOGIN"), "JWT Token added")
+
+                    print(currentLine("app", "LOGIN"), "User logged in successfully")    
+                    return resp
                 else: return jsonify({"code": 401, "message": "This user does not exist"}), 200
             else:
-                print(currentLine("app"), "Failed request")
+                print(currentLine("app", "LOGIN", "ERROR"), "Failed request")
                 return jsonify({"code": 401, "message": "Login failed"}), 200
         except Exception as error:
-            print(currentLine("app"), error)
+            print(currentLine("app", "LOGIN", "ERROR"), error)
             return jsonify({"code": 401, "message": "Login failed"}), 200
     else:
-        print(currentLine("app"), " It is not a json media type")
+        print(currentLine("app", "LOGIN", "ERROR"), "It is not a json media type")
         return jsonify({"code": 401, "message": "Login failed"}), 200
             
             
@@ -231,36 +219,34 @@ def registerPage():
  ### SUBSCRIBE NEW USER TO DB --- METHOD = 'POST'
 @app.route("/register", methods=['POST'])
 def register():
-    print(currentLine("app"), " I\'m inside subscribe function")
+    print(currentLine("app", "REGISTER"), " I\'m inside subscribe function")
     if (request.is_json):
         try:
             if(request.get_json() != None):
                 username = request.get_json()['username']
                 password = request.get_json()['password']
-                if engine.account(username, password, True):
-                    print(currentLine("app"), " User created")
+                if engine.account(True, username, password=password):
+                    print(currentLine("app", "REGISTER"), "User created")
                     access_token = create_access_token(identity=username, expires_delta=ACCESS_EXPIRES)
-                    print(currentLine("app"), "Token created")
+                    print(currentLine("app", "REGISTER"), "Token created")
                     tmp_access = jsonify(access_token=access_token, message="Registration success!", code=200)
                     set_access_cookies(response=tmp_access, encoded_access_token=access_token)
                     ### ADD JWT CODE + CSRF TOKEN TO THE DATABASE
                     if(engine.JWT_action(username, access_token, get_csrf_token(access_token), ACCESS_EXPIRES.total_seconds(), "add")):
                         return tmp_access
-                        #tmp_access.headers['Authorization'] = f'Bearer {access_token}'
-                        #return redirect(location=url_for("home_page", account=username), code=302, Response=tmp_access)
                     else:
                         return jsonify(message="Registration success!", code= 400), 200
                 else:
-                    print(currentLine("app"), " Register failed")
+                    print(currentLine("app", "REGISTER", "ERROR"), "Register failed")
                     return jsonify(message="Registration failed", code=400), 400
             else:
-                print(currentLine("app"), " Failed request")
+                print(currentLine("app", "REGISTER", "ERROR"), "Failed request")
                 return render_template("register.html", check=False), 400
         except Exception as error:
-            print(currentLine("app"), error)
+            print(currentLine("app", "REGISTER", "ERROR"), error)
             return render_template("error.html", error=error)
     else:
-        print(currentLine("app"), " It is not a json media type")
+        print(currentLine("app", "REGISTER", "ERROR"), "It is not a json media type")
         return render_template("register.html", check=False)
        
        
@@ -271,7 +257,7 @@ def logoutPage():
     engine.JWT_action(get_jwt()['sub'], get_jwt(), get_jwt()['csrf'], ACCESS_EXPIRES.total_seconds(), "revoke")
     response = make_response(render_template("logout.html/"),get_jwt())
     unset_jwt_cookies(response=response)
-    print(currentLine("app"), response.headers)
+    print(currentLine("app", "LOGOUT"), "User logged out successfully")
     return response, 302
 
 

@@ -18,4 +18,4 @@ WORKDIR "/home/app"
 
 ENV FLASK_APP=app
 EXPOSE 8000/tcp
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
+CMD ["gunicorn", "--certfile=/run/secrets/cert", "--keyfile=/run/secrets/key", "-b", "0.0.0.0:8000", "app:app"]

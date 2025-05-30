@@ -48,7 +48,9 @@
                         <div class="mb-3">
                           <label for="message-text" class="col-form-label">Password</label>
                           <input type="password" class="form-control" id="password-control"></input>
-                          <i class="fa fa-eye fa-eye-slash togglePassword"></i>
+                          <button class="btn btn-outline-secondary" type="button" id="button-addon2" name="eye-pwd-control">
+                            <i class="bi bi-eye-slash" id="eye-toggle"></i>
+                          </button>
                         </div>
                       </form>
                     </div>
@@ -78,9 +80,6 @@
     </div>
   </nav>
   <form class="row g-3 align-text-top" id="form-element" method="post">
-    {% if csrf_access_token %}
-    <input type="hidden" id="csrf_access_token" value="{{ csrf_access_token }}"/>
-    {% endif %}
     <div class="col-auto form-floating">
       <input type="text" class="form-control" id="floatingInput" name="name-control" placeholder="Name" autofocus>
       <label for="floatingInput">Name</label>
@@ -92,9 +91,7 @@
     <div class="col-auto form-floating input-group">
       <input type="password" class="form-control" id="floatingInput" name="password-control" placeholder="Password">
       <button class="btn btn-outline-secondary" type="button" id="button-addon1-control">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dice-5-fill" viewBox="0 0 16 16">
-          <path d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3zm2.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M12 13.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3M5.5 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M8 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
-        </svg>
+        <i class="bi bi-dice-5-fill"></i>
       </button>
       <button class="btn btn-outline-secondary" type="button" id="button-addon2" name="eye-pwd-control">
         <i class="bi bi-eye-slash" id="eye-toggle"></i>
@@ -132,10 +129,12 @@
           {% if key == 'id' or key == 'name' or key == 'username' %}
           <th scope="col" class="col-1">{{item|e}}</th>
           {% elif key == 'password' %}
-          <th scope="col" class="col-1"><button id="password-btn" class="password-control" type="button">•••••••••••</button>
-            <button class="btn btn-outline-secondary" type="button" id="button-addon2" style="border:none">
-              <i class="bi bi-eye-slash"></i>
-            </button>      
+          <th scope="col" class="col-1">
+            <button id="password-btn" class="password-control" type="button">•••••••••••</button>
+            <input type="hidden" class="password-value" value="{{item|e}}">
+            <button class="btn btn-outline-secondary" type="button" id="eyeBtnPWdList" name="eye-pwd-control">
+              <i class="bi bi-eye-slash" id="eye-toggle"></i>
+            </button>
           </th>
           {% elif key == 'uri' %}
           <th scope="col" class="col-1"><a href={{item|e}} target="_blank">{{item|e}}</a></th>

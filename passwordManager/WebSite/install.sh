@@ -52,6 +52,7 @@ function checkRequisites
 }
 
 
+
 function usage
 {
 	echo -e "\nPASSWORD MANAGER INSTALLER SETUP: "
@@ -64,12 +65,13 @@ function usage
 		--new-certificate	Install new certificate for the product only in this machine!.
 	-c, 	--cert			Specific certificate file [*.pkcs, *.crt, *.pem].
 	-k, 	--cert-key		Specify the key of the certificate passed by the other parameter (required --new-certificate parameter).
-	--http				Specify that the program runs only in http without certificate (requires -i|--install option).
+	--tz,	--time-zone="TZ"	Specify the time zone
 	
 EXAMPLES:
 	./install.sh OR ./install.sh -i|--install			--> First installation with a valid auto generated certificate.
 	./install.sh --new-certificate					--> Generate and install a new certificate.
-	./install.sh -c|--certifcate [FILE] -k|--certificate-key [FILE]	--> Specify a custom certificate and a valid key of the certification."
+	./install.sh -c|--certifcate [FILE] -k|--certificate-key [FILE]	--> Specify a custom certificate and a valid key of the certification.
+	./install.sh --tz=\"TZ\"|--time-zone=\"TZ\"			--> Specify the time zone of the product (It's for logs' purposes)"
 }
 
 
@@ -92,17 +94,6 @@ function firstInstall
 		mv default.conf .nginx/
 		mv default_https.conf .nginx/
 	fi
-	if [ $certificate == 0 ]; then
-		sed -e '/CMD/c\CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]' -i Dockerfile
-		sed -e 's|      - ./.nginx/default.conf:/etc/nginx/conf.d/default.conf|      - ./.nginx/default_https.conf:/etc/nginx/conf.d/default.conf|' -i compose.yaml
-		sed '/secrets\|(file)\|key\|cert/s/^/#/g' -i compose.yaml
-		#sed '/443/c\     - "80:80"' -i compose.yaml
-	else
-		sed -e '/CMD/c\CMD ["gunicorn", "--certfile=/run/secrets/cert", "--keyfile=/run/secrets/key", "-b", "0.0.0.0:8000", "app:app"]' -i Dockerfile
-		sed -e 's|      - ./.nginx/default_https.conf:/etc/nginx/conf.d/default.conf|      - ./.nginx/default.conf:/etc/nginx/conf.d/default.conf|' -i compose.yaml
-		sed '/secrets\|(file)\|key\|cert/s/^#*//g' -i compose.yaml
-		#sed '/80/c\     - "443:443"' -i compose.yaml
-	fi
 	
 	echo -e "Generating credentials for mongo...\r"
 	osrelease=$(grep -E '^(ID_LIKE)=' /etc/os-release)
@@ -112,13 +103,14 @@ function firstInstall
 	echo "Creation of docker.env file"
 	echo -e "# ENVIRONMENTS VARIABLES\n\nMONGO_INITDB_ROOT_USERNAME=\""$rnd_user"\"\nMONGO_INITDB_ROOT_PASSWORD=\""$rnd_pass"\"\nMONGO_INITDB_DATABASE=\"passwordManager\"\nTZ=Europe/Rome" > .docker.env 
 
-	if [ $certificate == 1 ]; then
-		newCertificate
-	else
-		echo -e "\nStarting services..."
-		time=$(timedatectl)
-		docker compose up -d --build > /dev/null 2>&1
-	fi
+	time=$(date +%s 2>&1)
+	newCertificate
+	echo -e "\nStarting services..."
+	docker compose up -d --build > /dev/null 2>&1
+	post_start_time=$(date +%s 2>61)
+
+	echo -e "\nTime for starting services: "$(expr $post_start_time - $time)" seconds\n"
+	echo -e "\n\nProgram is installed now! Great! You can play with it at https://jalbopass.com"
 }
 
 
@@ -199,6 +191,12 @@ function installCertificateKey
 	fi
 }
 
+
+function setTimeZone ()
+{
+	sed "s/TZ/TZ=$1/g" -i .docker.env
+}
+
 # MANAGE OPTIONS
 while [[ $# -gt 0  ]]; do
 	key="$1"
@@ -212,31 +210,25 @@ while [[ $# -gt 0  ]]; do
 			checkRequisites
 			newCertificate
 			shift
-	    ;;
+	    	;;
 		-i|--install)
-			if [ ! -z $2 ]; then
-				if [ $2 == "--http" ]; then
-					certificate=0
-				else
-					certificate=1
-				fi
-			fi
 			checkRequisites
 			firstInstall
-			exit 1
-	    ;;
-		--http)
-			echo "Requires to be with --install option."
-			exit 1
+			shift
 		;;
 		-c|--cert)
 			checkRequisites
 			installCertificate
 			shift
-	    ;;
+	    	;;
 		-k|--cert-key)
 			checkRequisites
 			installCertificateKey
+			shift
+	    	;;
+	    	--tz|--time-zone)
+			echo -e "\n$2\n"
+			setTimeZone $2
 			shift
 		;;
 	esac

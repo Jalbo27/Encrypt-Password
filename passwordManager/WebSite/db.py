@@ -27,7 +27,7 @@ class DataBase:
         self.__password = os.environ['MONGO_INITDB_ROOT_PASSWORD']
         self.__db_name = os.environ['MONGO_INITDB_DATABASE']
         
-        self.__jwt_db_name = 'MONGO_JWT_DATABASE'
+        self.__jwt_db_name = 'JWT_DATABASE'
         self.__key = Fernet.generate_key()
         self.__fernet = Fernet(self.__key)
         self.__uri = f"mongodb://{self.__username}:{self.__password}@mongo"
@@ -35,12 +35,12 @@ class DataBase:
         self.__jwt_connect = MongoClient(self.__uri)
         try:
             self.__client_connect.admin.command('ping')
-            print(currentLine("db"), "Connection success")
+            print(currentLine("db", "MONGO"), "Connection success")
             db = self.__client_connect[self.__db_name]
             results = db['User'].find({ "_id":{ '$exists': 'true' }})
             all_results = list(results)
             for document in all_results:
-                print(currentLine("db"), document)
+                print(currentLine("db", "MONGO"), document['username'])
             if db["User"] == None:
                 self.__createCollection("User", self.__client_connect)
             self.__client_connect.close()
@@ -62,7 +62,7 @@ class DataBase:
     
     
     ### CHECK IF THE USER EXISTS OR NOT
-    def account(self, username: str, password: str, is_new: bool) -> bool:
+    def account(self, is_new: bool, username: str, password = '') -> bool:
         result = None
         self.__client_connect = MongoClient(self.__uri)
         try:
@@ -71,20 +71,20 @@ class DataBase:
             if is_new:
                 found = database["User"].find_one({"username": username})
                 if found == None:
-                    print(currentLine("db"), f"Not found user called {username} and subscribe this new user")
+                    print(currentLine("db", "MONGO"), f"user called {username} not found so he and subscribe this new user")
                     result = database["User"].insert_one({"username": username, "password": self.__fernet.encrypt(password.encode())})
             else:
                 user = database["User"].find_one({"username": username})
-                print(currentLine("db"), user)
-                if self.__fernet.decrypt(user["password"]).decode() == password:
-                    print(currentLine("db"), "The decripted password is:", self.__fernet.decrypt(user["password"]).decode())
+                #print(currentLine("db", "MONGO"), user)
+                result = True
+                if password != ' ' and self.__fernet.decrypt(user["password"]).decode() == password:
                     result = True
-                    print(currentLine("db"), "Le password coincidono")
+                    print(currentLine("db", "MONGO"), "Password is correct")
             self.__client_connect.close()
             return True if result != None else False
         ### Connection is not gone well                        
         except Exception as e:
-            print(currentLine("db"), e)
+            print(currentLine("db", "MONGO", "ERROR"), e)
             self.__client_connect.close()
             return False
         
@@ -106,7 +106,6 @@ class DataBase:
                     if cursor.alive:
                         allItems = list(cursor)
                     for k,item in enumerate(allItems):
-                        print(item["password"])
                         allItems[k]["password"] = self.__fernet.decrypt(item["password"]).decode()
                     
                     cursor.close()
@@ -117,7 +116,7 @@ class DataBase:
             return []
         ### Connection is not gone well                        
         except Exception as e:
-            print(currentLine("db"), e)
+            print(currentLine("db", "MONGO", "ERROR"), e)
             self.__client_connect.close()
             return []
 
@@ -128,7 +127,7 @@ class DataBase:
         result = None
         try:
             self.__client_connect.admin.command("ping")
-            print(currentLine("db"), "Connection opened with database")
+            print(currentLine("db", "MONGO"), "Connection opened with database")
             database = self.__client_connect[self.__db_name] 
             
             id_user = database["User"].find_one({"username":username})
@@ -143,7 +142,7 @@ class DataBase:
                 
                 self.__client_connect.close()
                 if result:
-                    print(currentLine("db"), "New password inserted")
+                    print(currentLine("db", "MONGO"), "New password added successfully!")
                     return True
                 else: return False
             ### The specified user does not exist
@@ -151,7 +150,7 @@ class DataBase:
         ### Connection is not gone well                        
         except Exception as e:
             self.__client_connect.close()
-            print(currentLine("db"), e)
+            print(currentLine("db", "MONGO", "ERROR"), e)
             return False
         
     
@@ -177,12 +176,11 @@ class DataBase:
                         for element in list(collect.find({"id": { "$exists": "true", "$gt": cur_updated["id"]}})):
                             cur_updated = collect.find_one_and_update({"id": element["id"]}, {"$set": {"id": int(element["id"]) - 1}})
                             cur_updated["id"] = element["id"] + 1
-                        print(currentLine("db"), self.getPasswords(account))
                         collect.delete_one({"id": toDelete["id"]})
                         return True if collect.count_documents({}) < old_count else False
             return False 
         except Exception as e:
-            print(currentLine("db"), e)
+            print(currentLine("db", "MONGO", "ERROR"), e)
             self.__client_connect.close()
             return False
         
@@ -198,7 +196,7 @@ class DataBase:
             - JWT: str ---> code of JWT
             - csrf: str ---> token double submitted
             - lifetime: int ---> session validity of jwt token
-            - action: str ---> what to do with that in jwt: add - revoke - check (or refresh) token
+            - action: str ---> what to do with that in jwt: add - revoke - check - update (or refresh) token
         """
         self.__client_connect = MongoClient(self.__uri)
         self.__jwt_connect = MongoClient(self.__uri)
@@ -206,25 +204,22 @@ class DataBase:
         jwt_db = self.__jwt_connect[self.__jwt_db_name]
         jwt_collect = None
         try:
-            id_user = db["User"].find_one({"username": account})
+            id_user = db["User"].find_one({"username": account}) if account != '' else None
             if action == "add":
                 if id_user['_id'] != None:
                     jwt_collect = jwt_db.get_collection("JWT_collection")
                     if(jwt_collect == None):
-                        print(currentLine("db"), "JWT_collection does not exist and it will be created...")
+                        print(currentLine("db", "MONGO"), "JWT_collection does not exist and it will be created...")
                         self.__createCollection("JWT_collection", self.__jwt_connect)
 
                     jwt_collect.insert_one({"_id": id_user['_id'], "jwt_code": JWT, "lifetime": lifetime, "csrf_token": csrf})
-                    documents = jwt_collect.find()
-                    for document in documents: 
-                        print( currentLine("db"), document)
-                    print(currentLine("db"), "JWT inserted in the table successfully!")
+                    print(currentLine("db", "MONGO"), "JWT inserted in the table successfully!")
                     self.__client_connect.close()
                     self.__jwt_connect.close()
-                    print(currentLine("db"), "Connection to database closed.")
+                    print(currentLine("db", "MONGO"), "Connection to database closed.")
                     return True
                 else:
-                    print(currentLine("db"), f"This user: {account} doesn't exist")
+                    print(currentLine("db", "MONGO", "ERROR"), f"This user: {account} doesn't exist")
                     return False
             if action == "revoke":
                 if id_user['_id'] != None:
@@ -233,58 +228,69 @@ class DataBase:
                         self.__createCollection("JWT_revoke", self.__jwt_connect)
                     
                     jwt_collect.insert_one({"_id_user": id_user['_id'], "jwt_code": JWT, "lifetime": lifetime, "csrf_token": csrf})
-                    print(currentLine("db"), "JWT revoked and inserted in the table successfully!")
+                    print(currentLine("db","MONGO"), "JWT revoked and inserted in the table successfully!")
                     jwt_collect = jwt_db.get_collection("JWT_collection")
                     if  jwt_collect != None:
                         jwt_collect.delete_one({"_id": id_user['_id']})
-                        print(currentLine("db"), "JWT token deleted from the table")
+                        print(currentLine("db", "MONGO"), "JWT token deleted from the table")
 
                     else: return False
                     self.__client_connect.close()
                     self.__jwt_connect.close()
                     return True
                 else:
-                    print(currentLine("db"), f"This user: {account} doesn't exist")
+                    print(currentLine("db", "MONGO", "ERROR"), f"This user: {account} doesn't exist")
                     return False
             elif action == "check":
                 if id_user['_id'] != None:
                     jwt_collect = jwt_db.get_collection("JWT_revoke")
                     if(jwt_collect == None):
-                        print(currentLine("db"), "JWT_revoke does not exist...")
+                        print(currentLine("db", "MONGO", "ERROR"), "JWT_revoke does not exist")
                         return False
                     
                     jwt_revoked = jwt_collect.find_one({"_id_user": id_user['_id'], "jwt_code": JWT})
                     if  jwt_revoked != None:
-                        print(currentLine("db"), "JWT token was been revoked so the operation is not allowed")
+                        print(currentLine("db", "MONGO"), "JWT token was been revoked so the operation is not allowed")
                         return False
                     else: 
                         return True
                 else:
-                    print(currentLine("db"), f"This user: {account} doesn't exist")
+                    print(currentLine("db", "MONGO", "ERROR"), f"This user: {account} does not exist")
                     return False
             elif action == "update":
-                if id_user['_id'] != None:
+                if id_user['_id'] != None or JWT != None:
                     jwt_collect = jwt_db.get_collection("JWT_collection")
                     if(jwt_collect == None):
-                        print(currentLine("db"), "JWT_collection does not exist...")
+                        print(currentLine("db", "MONGO", "ERROR"), "JWT_collection does not exist")
                         return False
-                    jwt_collect.update_one({"_id": id_user['_id']}, {"$set": {"jwt_code": JWT, "csrf_token": csrf}})
-                    print(currentLine("db"), "JWT updated in the table successfully!")
-                    self.__client_connect.close()
-                    self.__jwt_connect.close()
-                    return True
+                    document = jwt_collect.find_one_and_update({
+                        "$or": [{"_id": id_user['_id']},
+                                {"jwt_code": JWT}]
+                        }, 
+                        {"$set": {"jwt_code": JWT, "csrf_token": csrf}})
+                    if document != None:
+                        print(currentLine("db", "MONGO"), "JWT updated in the table successfully!")
+                        self.__client_connect.close()
+                        self.__jwt_connect.close()
+                        return True
+                    else:
+                        print(currentLine("db", "MONGO", "ERROR"), "JWT not inserted in the table")
+                        self.__client_connect.close()
+                        self.__jwt_connect.close()
+                        return False
                 else:
-                    print(currentLine("db"), f"This user: {account} doesn't exist")
+                    print(currentLine("db", "MONGO", "ERROR"), f"This user: {account} does not exist")
                     return False
 
             else: return False
         except Exception as e:
-            print(currentLine("db"), e)
+            print(currentLine("db", "MONGO", "ERROR"), e)
             self.__client_connect.close()
             self.__jwt_connect.close()
             return False
         
     
+    ### CHECK JWT IF EXISTS IN THE DATABASE
     def checkJWT(self, JWT:str) -> bool:
         if JWT != None: 
             self.__jwt_connect = MongoClient(self.__uri)
@@ -293,8 +299,7 @@ class DataBase:
                 jwt_collect = jwt_db.get_collection("JWT_collection")
                 if jwt_collect != None:
                     token = jwt_collect.find_one({"jwt_code": JWT})
-                    print(currentLine("db"), token)
-                    print(currentLine("db"), token["jwt_code"])
+                    print(currentLine("db", "MONGO"), "The value of token is valid: ", token if token != None else "The value of token is None")
                     return True if token != None else False
             else: return False        
         else: return False    

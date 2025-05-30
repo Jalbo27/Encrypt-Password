@@ -35,7 +35,6 @@ async function sendForm(url, account) {
     headers: {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      "X-CSRF-TOKEN": (document.cookie.split(';')?.find(row => row.startsWith('csrf_access_token='))).replace("csrf_access_token=", "")
     },
     credentials: 'same-origin',
     body: JSON.stringify(account),

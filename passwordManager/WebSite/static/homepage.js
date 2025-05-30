@@ -26,7 +26,7 @@ window.onload = () => {
     });
   }
   /**
-   * CONTROLLO LATO BACKEND DEI DATI INSERITI DALL'UTENTE E AGGIUNTA IN TABELLA DEI NUOVI CAMPI
+   * CHECK IF THE FORM IS CORRECTLY FORMATTED AND SEND THE DATA TO THE BACKEND
    */
   const form_element = document.getElementById("form-element");
   form_element.addEventListener("submit", async (event) => {
@@ -98,14 +98,14 @@ window.onload = () => {
   /**
    * ADD THE EVENT TO THE EYE VIEW PASSWORD TOGGLE TO THE TABLE
    */
-  document.querySelectorAll('.togglePassword').forEach(el => {
-    el.addEventListener('click', e => {
-      let password = el.parentElement.getElementsByClassName('password-control')[0];
-      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-      password.setAttribute('type', type);
-      e.target.classList.toggle('fa-eye-slash');
-    });
-  });
+  // document.querySelectorAll('.togglePassword').forEach(el => {
+  //   el.addEventListener('click', e => {
+  //     let password = el.parentElement.getElementsByClassName('password-control')[0];
+  //     const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+  //     password.setAttribute('type', type);
+  //     e.target.classList.toggle('fa-eye-slash');
+  //   });
+  // });
 
   /**
    * GENERATE RANDOM PASSWORD
@@ -118,23 +118,35 @@ window.onload = () => {
   /**
    * PASSWORD TOGGLE VIEW
    */
-  let eye_toggle = document.getElementsByName("eye-pwd-control")[0];
-  eye_toggle.addEventListener('click', () => {
-    let password = document.getElementsByName('password-control')[0];
-    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-    password.setAttribute('type', type);
-    if (type == 'text')
-      document.getElementById('eye-toggle').classList.replace("bi-eye-slash", "bi-eye");
-    else
-      document.getElementById('eye-toggle').classList.replace("bi-eye", "bi-eye-slash");
-  });
+  let eye_toggle = document.getElementsByName("eye-pwd-control");
+  Array.prototype.map.call(eye_toggle, element => { element.addEventListener("click", () => {
+    let password = element.parentElement.childNodes[1];
+    let hiddenpwd = document.getElementsByClassName("password-value")[0].value;
+    console.log(password);
+    console.log(hiddenpwd);
+    const type = document.getElementById('eye-toggle').className === 'bi-eye-slash' ? 'bi-eye' : 'bi-eye-slash';
+    console.log(type);
+    if (type == 'bi-eye-slash'){
+      document.getElementById('eye-toggle').className.replace("bi-eye-slash", "bi-eye");
+      password.textContent = hiddenpwd;
+    }
+    else{
+      document.getElementById('eye-toggle').className.replace("bi-eye", "bi-eye-slash");
+      password.textContent = "•••••••••••";  
+    }
+  });});
+  // eye_toggle.addEventListener('click', () => {
+  //   let password = eye_toggle.parentElement.childNodes[1];
+  //   console.log(password);
+  //   const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+  //   password.setAttribute('type', type);
+  //   if (type == 'text')
+  //     document.getElementById('eye-toggle').classList.replace("bi-eye-slash", "bi-eye");
+  //   else
+  //     document.getElementById('eye-toggle').classList.replace("bi-eye", "bi-eye-slash");
+  // });
 }
 
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-}
 
 /**
  * Helper function for POSTing data as JSON with fetch.
@@ -148,7 +160,6 @@ async function sendLogin(account) {
     headers: {
       "Content-Type": "application/json",
       "Accept": "application/json",
-      "X-CSRF-TOKEN": (document.cookie.split(';')?.find(row => row.startsWith('csrf_access_token='))).replace("csrf_access_token=", ""),
     },
     credentials: 'same-origin',
     body: JSON.stringify(account),
@@ -192,11 +203,12 @@ async function sendForm() {
     credentials:'same-origin',
     body: JSON.stringify(container)
   }).then(async response => {
+    console.log(response);
     if (!response.ok) {
       const errorMessage = response.text();
       throw new Error(errorMessage);
     }
-    else if(response.status == 100){
+    else if(response.ok){
       const value = await response.json();
       return value;
     }
@@ -276,22 +288,21 @@ function addNewPassword(id) {
   eyeBtn.classList.add("btn", "btn-outline-secondary");
   eyeBtn.setAttribute("type", "button");
   eyeBtn.setAttribute("id", "eye-toggle");
+  eyeBtn.setAttribute("name", "eye-pwd-control");
   eyeBtn.style.border = "none";
   svgImg.classList.add("bi", "bi-eye-slash");
   eyeBtn.appendChild(svgImg);
   pwdBtn.setAttribute("id", "password-btn");
   pwdBtn.classList.add("form-control");
   pwdBtn.textContent = "•••••••••••";
-  pwdBtn.addEventListener('click', (e) => { navigator.clipboard.writeText(container.password) });
-  eyeBtn.addEventListener('click', (e) => {
-    if(eyeBtn.classList.contains("bi-eye-slash")){
-      console.log(pwdBtn.textContent);
+  pwdBtn.addEventListener('click', () => { navigator.clipboard.writeText(container.password) });
+  eyeBtn.addEventListener('click', () => {
+    if(svgImg.classList.contains("bi-eye-slash")){
       pwdBtn.textContent = container.password;
-      eyeBtn.classList.replace("bi-eye-slash", "bi-eye");
+      svgImg.classList.replace("bi-eye-slash", "bi-eye");
     }else{
-      console.log(pwdBtn.textContent);
       pwdBtn.textContent = "•••••••••••";
-      eyeBtn.classList.replace("bi-eye", "bi-eye-slash");
+      svgImg.classList.replace("bi-eye", "bi-eye-slash");
     }
   });
   link_uri.href = container.uri;
