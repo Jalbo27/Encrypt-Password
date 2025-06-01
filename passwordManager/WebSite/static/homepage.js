@@ -25,6 +25,7 @@ window.onload = () => {
       }
     });
   }
+
   /**
    * CHECK IF THE FORM IS CORRECTLY FORMATTED AND SEND THE DATA TO THE BACKEND
    */
@@ -95,17 +96,6 @@ window.onload = () => {
     });
   });
 
-  /**
-   * ADD THE EVENT TO THE EYE VIEW PASSWORD TOGGLE TO THE TABLE
-   */
-  // document.querySelectorAll('.togglePassword').forEach(el => {
-  //   el.addEventListener('click', e => {
-  //     let password = el.parentElement.getElementsByClassName('password-control')[0];
-  //     const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-  //     password.setAttribute('type', type);
-  //     e.target.classList.toggle('fa-eye-slash');
-  //   });
-  // });
 
   /**
    * GENERATE RANDOM PASSWORD
@@ -135,16 +125,6 @@ window.onload = () => {
       password.textContent = "•••••••••••";  
     }
   });});
-  // eye_toggle.addEventListener('click', () => {
-  //   let password = eye_toggle.parentElement.childNodes[1];
-  //   console.log(password);
-  //   const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-  //   password.setAttribute('type', type);
-  //   if (type == 'text')
-  //     document.getElementById('eye-toggle').classList.replace("bi-eye-slash", "bi-eye");
-  //   else
-  //     document.getElementById('eye-toggle').classList.replace("bi-eye", "bi-eye-slash");
-  // });
 }
 
 

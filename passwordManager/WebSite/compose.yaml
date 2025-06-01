@@ -11,9 +11,9 @@ services:
     volumes:
       - ./.nginx/default.conf:/etc/nginx/conf.d/default.conf
     ports:
-     - "443:443"
+      - "443:443"
     environment:
-      - TZ=Europe/Rome
+      - TZ=America/Cordoba
     networks:
       - default
     depends_on:

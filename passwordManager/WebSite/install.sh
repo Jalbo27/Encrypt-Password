@@ -75,7 +75,7 @@ EXAMPLES:
 }
 
 
-function firstInstall
+function firstInstall ()
 {
 	if [ docker inspect webiste-mongo-1 > /dev/null 2>&1 -a docker inspect website-password-manager-1 > /dev/null 2>&1 -a docker inspect website-nginx-1 > /dev/null 2>&1 ]; then	
 		echo "stopping existing services of the product..."
@@ -92,7 +92,6 @@ function firstInstall
 		echo -e "Directories creation done"
 		mkdir .nginx/ .nginx/.certs/ 
 		mv default.conf .nginx/
-		mv default_https.conf .nginx/
 	fi
 	
 	echo -e "Generating credentials for mongo...\r"
@@ -101,13 +100,23 @@ function firstInstall
 	rnd_user=$(LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c 13; echo)
 	#rnd=$(LC_ALL=C tr -dc 'A-Za-z0-9!#%&''()*\'',-./:;<=>?[\]^_`{|}~' < /dev/urandom | head -c 13; echo)
 	echo "Creation of docker.env file"
-	echo -e "# ENVIRONMENTS VARIABLES\n\nMONGO_INITDB_ROOT_USERNAME=\""$rnd_user"\"\nMONGO_INITDB_ROOT_PASSWORD=\""$rnd_pass"\"\nMONGO_INITDB_DATABASE=\"passwordManager\"\nTZ=Europe/Rome" > .docker.env 
+	if [[ $# -gt 0 ]]; then
+		echo -e "# ENVIRONMENTS VARIABLES\n\nMONGO_INITDB_ROOT_USERNAME=\""$rnd_user"\"\nMONGO_INITDB_ROOT_PASSWORD=\""$rnd_pass"\"\nMONGO_INITDB_DATABASE=\"passwordManager\"\nTZ=\"$1\"" > .docker.env 
+		cat /etc/timezone 
+		echo "$(cat /etc/timezone)"
+		echo $1
+		sed '/TZ/c\      - TZ='$1'' -i compose.yaml
+	else
+		echo -e "# ENVIRONMENTS VARIABLES\n\nMONGO_INITDB_ROOT_USERNAME=\""$rnd_user"\"\nMONGO_INITDB_ROOT_PASSWORD=\""$rnd_pass"\"\nMONGO_INITDB_DATABASE=\"passwordManager\"\nTZ="$(cat /etc/timezone)"" > .docker.env 
+		cat /etc/timezone
+		echo "$(cat /etc/timezone)"
+		sed '/TZ/c\      - TZ='$(cat /etc/timezone)'' -i compose.yaml
+	fi
 
 	time=$(date +%s 2>&1)
 	newCertificate
 	echo -e "\nStarting services..."
-	docker compose up -d --build > /dev/null 2>&1
-	post_start_time=$(date +%s 2>61)
+	post_start_time=$(date +%s 2>&1)
 
 	echo -e "\nTime for starting services: "$(expr $post_start_time - $time)" seconds\n"
 	echo -e "\n\nProgram is installed now! Great! You can play with it at https://jalbopass.com"
@@ -149,9 +158,9 @@ function newCertificate
 		docker start $(docker ps -aqf "name=website-mongo-1")
 		docker start $(docker ps -aqf "name=website-nginx-1")
 		docker start $(docker ps -aqf "name=website-password-manager-1")
-    else
+    	else
 		docker compose up -d --build > /dev/null 2>&1
-    fi
+    	fi
 }
 
 
@@ -192,11 +201,6 @@ function installCertificateKey
 }
 
 
-function setTimeZone ()
-{
-	sed "s/TZ/TZ=$1/g" -i .docker.env
-}
-
 # MANAGE OPTIONS
 while [[ $# -gt 0  ]]; do
 	key="$1"
@@ -213,8 +217,12 @@ while [[ $# -gt 0  ]]; do
 	    	;;
 		-i|--install)
 			checkRequisites
-			firstInstall
-			shift
+			if [ $2=='--tzt' -o $2=='--time-zone' ]; then
+				firstInstall $3
+			else
+				firstInstall
+			fi
+			exit 1
 		;;
 		-c|--cert)
 			checkRequisites
@@ -226,10 +234,5 @@ while [[ $# -gt 0  ]]; do
 			installCertificateKey
 			shift
 	    	;;
-	    	--tz|--time-zone)
-			echo -e "\n$2\n"
-			setTimeZone $2
-			shift
-		;;
 	esac
 done
