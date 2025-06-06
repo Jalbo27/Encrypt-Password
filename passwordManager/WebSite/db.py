@@ -62,7 +62,7 @@ class DataBase:
     
     
     ### CHECK IF THE USER EXISTS OR NOT
-    def account(self, is_new: bool, username: str, password = '') -> bool:
+    def account(self, is_new: bool, username: str, password = None) -> bool:
         result = None
         self.__client_connect = MongoClient(self.__uri)
         try:
@@ -75,13 +75,15 @@ class DataBase:
                     result = database["User"].insert_one({"username": username, "password": self.__fernet.encrypt(password.encode())})
             else:
                 user = database["User"].find_one({"username": username})
-                #print(currentLine("db", "MONGO"), user)
-                result = True
-                if password != ' ' and self.__fernet.decrypt(user["password"]).decode() == password:
+                result = True if user != None else False
+                if password != None and self.__fernet.decrypt(user['password']).decode() == password:
                     result = True
                     print(currentLine("db", "MONGO"), "Password is correct")
+                elif password != None and self.__fernet.decrypt(user['password']).decode() != password:
+                    result = False
+                    print(currentLine("db", "MONGO"), "Password is not correct")
             self.__client_connect.close()
-            return True if result != None else False
+            return result
         ### Connection is not gone well                        
         except Exception as e:
             print(currentLine("db", "MONGO", "ERROR"), e)

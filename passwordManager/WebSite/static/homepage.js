@@ -96,7 +96,6 @@ window.onload = () => {
     });
   });
 
-
   /**
    * GENERATE RANDOM PASSWORD
    */
@@ -104,28 +103,6 @@ window.onload = () => {
   dice_generator.addEventListener('click', () =>{
     document.getElementsByName("password-control")[0].value = Math.random().toString(36).substring(2,20); 
   });
-
-  // /**
-  //  * PASSWORD TOGGLE VIEW
-  //  */
-  // let eye_toggle = document.getElementsByName("eye-pwd-control");
-  // Array.prototype.map.call(eye_toggle, element => { element.addEventListener("click", () => {
-  //   let password = element.parentElement.childNodes[1];
-  //   let hiddenpwd = document.getElementsByClassName("password-value")[0].value;
-  //   console.log(password);
-  //   console.log(hiddenpwd);
-  //   const type = document.getElementById('eye-toggle').className === 'bi-eye-slash' ? 'bi-eye' : 'bi-eye-slash';
-  //   console.log(type);
-  //   if (type == 'bi-eye-slash'){
-  //     document.getElementById('eye-toggle').className.replace("bi-eye-slash", "bi-eye");
-  //     password.textContent = hiddenpwd;
-  //   }
-  //   else{
-  //     document.getElementById('eye-toggle').className.replace("bi-eye", "bi-eye-slash");
-  //     password.textContent = "•••••••••••";  
-  //   }
-  // });});
-
 
   /**
    * ADD THE EVENT TO THE EYE VIEW PASSWORD TOGGLE TO THE TABLE

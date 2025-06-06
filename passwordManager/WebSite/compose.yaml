@@ -13,7 +13,7 @@ services:
     ports:
       - "443:443"
     environment:
-      - TZ=America/Cordoba
+      - TZ=Europe/Rome
     networks:
       - default
     depends_on:
