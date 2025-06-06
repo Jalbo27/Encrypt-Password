@@ -8,7 +8,6 @@ window.onload = () => {
     try {
       const username = document.getElementById("user-control").value;
       const password = document.getElementById("password-control").value;
-      console.log("username: " + username + "\npassword: " + password);
       if (username != '' && password != '') {
         const account = {
           username: username,
