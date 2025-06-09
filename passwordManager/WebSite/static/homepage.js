@@ -117,7 +117,7 @@ window.onload = () => {
         type.replace("bi bi-eye-slash", "bi bi-eye");
       }
       else{
-        password.setAttribute("type", "password");
+        password.setAttrib-ute("type", "password");
         type.replace("bi bi-eye", "bi bi-eye-slash");
       }
     });

@@ -1,3 +1,4 @@
+from tabnanny import check
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from cryptography.fernet import Fernet
@@ -51,10 +52,11 @@ class DataBase:
             
     
     ### CREATE COLLECTION IN ATLAS
-    def __createCollection(self, username: str, con: MongoClient) -> bool:
+    def __createCollection(self, table: str, con: MongoClient) -> bool:
         try:
             print(con.admin.command("ping"))
-            con[self.__db_name].create_collection(username)
+            con[self.__db_name].create_collection(table)
+            print(currentLine("db", "MONGO"), f"Collection {table} created successfully")
             return True
         except ConnectionFailure as e:
             print(e)
@@ -213,19 +215,29 @@ class DataBase:
                     if(jwt_collect == None):
                         print(currentLine("db", "MONGO"), "JWT_collection does not exist and it will be created...")
                         self.__createCollection("JWT_collection", self.__jwt_connect)
-
-                    jwt_collect.insert_one({"_id": id_user['_id'], "jwt_code": JWT, "lifetime": lifetime, "csrf_token": csrf})
-                    print(currentLine("db", "MONGO"), "JWT inserted in the table successfully!")
-                    self.__client_connect.close()
-                    self.__jwt_connect.close()
-                    print(currentLine("db", "MONGO"), "Connection to database closed.")
-                    return True
+                    ### Check if the user and JWT already exist in the collection
+                    check = jwt_collect.find_one({"_id": id_user['_id']})
+                    if check == None:
+                        jwt_collect.insert_one({"_id": id_user['_id'], "jwt_code": JWT, "lifetime": lifetime, "csrf_token": csrf})
+                        print(currentLine("db", "MONGO"), "JWT inserted in the table successfully!")
+                        self.__client_connect.close()
+                        self.__jwt_connect.close()
+                        print(currentLine("db", "MONGO"), "Connection to database closed.")
+                        return True
+                    else:
+                        print(currentLine("db", "MONGO", "ERROR"), "JWT already exists in the table")
+                        print(currentLine("db", "MONGO"), "Substituting the old JWT with the new one...")
+                        document = jwt_collect.find_one_and_update({"_id": id_user['_id']}, {"$set": {"jwt_code": JWT, "csrf_token": csrf}})
+                        self.__client_connect.close()
+                        self.__jwt_connect.close()
+                        print(currentLine("db", "MONGO"), "Connection to database closed.")
+                        return True if document != None else False
                 else:
                     print(currentLine("db", "MONGO", "ERROR"), f"This user: {account} doesn't exist")
                     return False
             if action == "revoke":
                 if id_user['_id'] != None:
-                    jwt_collect = jwt_db.get_collection("JWT_revoke")
+                    jwt_collect = jwt_db.get_collection("JWT_revoked")
                     if(jwt_collect == None):
                         self.__createCollection("JWT_revoke", self.__jwt_connect)
                     
@@ -245,12 +257,12 @@ class DataBase:
                     return False
             elif action == "check":
                 if id_user['_id'] != None:
-                    jwt_collect = jwt_db.get_collection("JWT_revoke")
+                    jwt_collect = jwt_db.get_collection("JWT_revoked")
                     if(jwt_collect == None):
-                        print(currentLine("db", "MONGO", "ERROR"), "JWT_revoke does not exist")
+                        print(currentLine("db", "MONGO", "ERROR"), "JWT_revoke table does not exist")
                         return False
                     
-                    jwt_revoked = jwt_collect.find_one({"_id_user": id_user['_id'], "jwt_code": JWT})
+                    jwt_revoked = jwt_collect.find_one({"$or": [{"_id": id_user['_id']}, {"jwt_code": JWT}]})
                     if  jwt_revoked != None:
                         print(currentLine("db", "MONGO"), "JWT token was been revoked so the operation is not allowed")
                         return False
@@ -301,7 +313,14 @@ class DataBase:
                 jwt_collect = jwt_db.get_collection("JWT_collection")
                 if jwt_collect != None:
                     token = jwt_collect.find_one({"jwt_code": JWT})
-                    print(currentLine("db", "MONGO"), "The value of token is valid: ", token if token != None else "The value of token is None")
-                    return True if token != None else False
+                    if token == None:
+                        print(currentLine("db", "MONGO", "ERROR"), "The value of token is not valid")
+                        self.__jwt_connect.close()
+                        return False
+                    else:
+                        print(currentLine("db", "MONGO"), "The value of token is valid: ", token)
+                        self.__jwt_connect.close()
+                        return True
+                else: return False
             else: return False        
         else: return False    

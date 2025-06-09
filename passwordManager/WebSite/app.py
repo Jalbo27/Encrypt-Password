@@ -78,8 +78,7 @@ def home_page(account=''):
     if account != '' and engine.account(False, account):
         try:
             current_user = get_jwt_identity()
-            print(currentLine("app", "HOMEPAGE"), current_user)
-            #print(currentLine("app"), "Il codice JWT dell'utente è: ",request.cookies.get('access_token_cookie'))
+            print(currentLine("app", "HOMEPAGE"), "The user in homepage now is", current_user)
             if current_user == account and engine.checkJWT(request.cookies.get('access_token_cookie')):
                 print(currentLine("app", "HOMEPAGE"), "Users match")
                 password_dict = engine.getAllPasswords(account)
@@ -90,7 +89,7 @@ def home_page(account=''):
                     print(currentLine("app", "HOMEPAGE"), f'The account {account} has no passwords')
                     return render_template("homepage.html", account=account)
             else:
-                print(currentLine("app", "HOMEPAGE", "ERROR"), "Users do not match")
+                print(currentLine("app", "HOMEPAGE", "ERROR"), "Users do not match or session is expired")
                 return redirect(url_for("login"))
         except Exception as e:
             print(currentLine("app", "HOMEPAGE", "ERROR"), e)
@@ -185,8 +184,11 @@ def login():
 
                     if used_token is None:
                         print(currentLine("app", "LOGIN"), "No previous token found, creating a new one")
-                        engine.JWT_action(username, access_token, get_csrf_token(access_token), ACCESS_EXPIRES.total_seconds(), "add")
-                        print(currentLine("app", "LOGIN"), "JWT Token added")
+                        if engine.JWT_action(username, access_token, get_csrf_token(access_token), ACCESS_EXPIRES.total_seconds(), "add"):
+                            print(currentLine("app", "LOGIN"), "JWT Token added")
+                        else:
+                            print(currentLine("app", "LOGIN", "ERROR"), "Failed to add JWT Token")
+                            return jsonify({"code": 500, "message": "Something went wrong during login of the user"}), 200
                     else:
                         ### CHECK IF THE JWT TOKEN IS ALREADY IN THE DATABASE AND ADD JWT CODE + CSRF TOKEN TO THE DATABASE
                         if(engine.JWT_action(username, used_token, get_csrf_token(used_token), ACCESS_EXPIRES.total_seconds(), "check")):

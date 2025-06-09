@@ -5,6 +5,7 @@ stty -echoctl
 PATH_PRODUCT_CERTS=".nginx/.certs"
 PATH_SYSTEM_CERTS="/etc/ssl/certs"
 certificate=1
+verbose=0
 
 trap ctrl_c INT
 
@@ -20,37 +21,44 @@ function checkRequisites
 {
 	check=0
 	### CHECK FOR DOCKER COMMAND
-	if [ ! docker 2>&1 > /dev/null ]; then
+	if ! command -v docker 2>&1 > /dev/null; then
 		printf "\ndocker is not installed..."
 	else
 		printf "\ndocker is installed, check for openssl... \u2714\ufe0f"
 		check=1
 	fi
-	### CHECK FOR OPENSSL COMMAND
-	if [ ! openssl 2>&1 > /dev/null ]; then
+	### CHECK FOR OPENSSL COM4MAND
+	if ! command -v openssl 2>&1 > /dev/null; then
 		printf "\nopenssl is not installed..."
-		check=0
+		check=$(expr $check - 1)
+		check=$(echo ${check#-})
 	else
 		printf "\nopenssl is installed, check for file... \u2714\ufe0f"
-		check=1
+		check=$(expr $check + 1)
+		check=$(echo ${check#-})
 	fi
 	### CHECK FOR FILE COMMAND
-	if [ ! file 2>&1 > /dev/null ]; then
+	if ! command -v file 2>&1 > /dev/null; then
 		printf "\nfile is not installed..."
-		check=0
+		check=$(expr $check - 1)
+		check=$(echo ${check#-})
 	else
 		printf "\nfile is installed... \u2714\ufe0f"
-		check=1
+		check=$(expr $check + 1)
+		check=$(echo ${check#-})
 	fi
 
-	if [ $check==1 ]; then
+	if [ $check -eq 3 ]; then
 		printf "\n\nAll requisites are installed \u2714\ufe0f"
-	else
-		printf "\n\nSome requisites are not installed"
-		printf "Install necessary packages based by your system"
+	elif [ $check -eq 0 ]; then
+		printf "None of the requisites are installed... exiting"
+		exit 0;
+	elif [ $check > 0 ] && [ $check < 3 ]; then
+		printf "\n\n$check requisites are not installed"
+		printf "Install necessary packages based by your system first, then retry the install"
+		exit 0;
 	fi
 }
-
 
 
 function usage
@@ -90,8 +98,13 @@ function firstInstall ()
 	echo -e "\nPreparing directories..."
 	if [ ! -d .nginx/ -a ! -d .nginx/.certs/ ]; then
 		echo -e "Directories creation done"
-		mkdir .nginx/ .nginx/.certs/ 
-		mv default.conf .nginx/
+		if [ $verbose -eq 1 ]; then
+			mkdir -v .nginx/ .nginx/.certs/ 
+			mv -v default.conf .nginx/
+		else
+			mkdir .nginx/ .nginx/.certs/ 
+			mv default.conf .nginx/
+		fi
 	fi
 	
 	echo -e "Generating credentials for mongo...\r"
@@ -102,14 +115,9 @@ function firstInstall ()
 	echo "Creation of docker.env file"
 	if [[ $# -gt 0 ]]; then
 		echo -e "# ENVIRONMENTS VARIABLES\n\nMONGO_INITDB_ROOT_USERNAME=\""$rnd_user"\"\nMONGO_INITDB_ROOT_PASSWORD=\""$rnd_pass"\"\nMONGO_INITDB_DATABASE=\"passwordManager\"\nTZ=\"$1\"" > .docker.env 
-		cat /etc/timezone 
-		echo "$(cat /etc/timezone)"
-		echo $1
 		sed '/TZ/c\      - TZ='$1'' -i compose.yaml
 	else
-		echo -e "# ENVIRONMENTS VARIABLES\n\nMONGO_INITDB_ROOT_USERNAME=\""$rnd_user"\"\nMONGO_INITDB_ROOT_PASSWORD=\""$rnd_pass"\"\nMONGO_INITDB_DATABASE=\"passwordManager\"\nTZ="$(cat /etc/timezone)"" > .docker.env 
-		cat /etc/timezone
-		echo "$(cat /etc/timezone)"
+		echo -e "# ENVIRONMENTS VARIABLES\n\nMONGO_INITDB_ROOT_USERNAME=\""$rnd_user"\"\nMONGO_INITDB_ROOT_PASSWORD=\""$rnd_pass"\"\nMONGO_INITDB_DATABASE=\"passwordManager\"\nTZ="$(cat /etc/timezone) > .docker.env 
 		sed '/TZ/c\      - TZ='$(cat /etc/timezone)'' -i compose.yaml
 	fi
 
@@ -141,8 +149,13 @@ function newCertificate
 
 	# GENERATE CERTIFICATE
 	echo -e "\nGenerating the new license for this specific system"
-	openssl req -x509 -newkey rsa:4096 -keyout $PATH_PRODUCT_CERTS/rootCA.key -out $PATH_PRODUCT_CERTS/pw-managerRootCA.crt -sha256 -days 365 -nodes \
-	-subj "/CN=jalbopass.com/C=ST/ST=Some-State/L=Some-City/O=Jalbo Industries S.p.A/OU=Jalbo PW-Manager Root CA" > /dev/null 2>&1 
+	if [ $verbose -eq 1 ]; then
+		openssl req -x509 -newkey rsa:4096 -keyout $PATH_PRODUCT_CERTS/rootCA.key -out $PATH_PRODUCT_CERTS/pw-managerRootCA.crt -sha256 -days 365 -nodes \
+		-subj "/CN=jalbopass.com/C=ST/ST=Some-State/L=Some-City/O=Jalbo Industries S.p.A/OU=Jalbo PW-Manager Root CA"
+	else
+		openssl req -x509 -newkey rsa:4096 -keyout $PATH_PRODUCT_CERTS/rootCA.key -out $PATH_PRODUCT_CERTS/pw-managerRootCA.crt -sha256 -days 365 -nodes \
+		-subj "/CN=jalbopass.com/C=ST/ST=Some-State/L=Some-City/O=Jalbo Industries S.p.A/OU=Jalbo PW-Manager Root CA" > /dev/null 2>&1 
+	fi
 
 	if [ -d /usr/share/applications/ca-certificates/mozilla ]; then
 		cp $PATH_PRODUCT_CERTS/pw-managerRootCA.crt /usr/share/ca-certificates/mozilla/
@@ -159,8 +172,13 @@ function newCertificate
 		docker start $(docker ps -aqf "name=website-nginx-1")
 		docker start $(docker ps -aqf "name=website-password-manager-1")
     	else
-		docker compose up -d --build > /dev/null 2>&1
-    	fi
+		if [ $verbose -eq 1 ]; then
+			docker compose up -d --build
+		else
+			docker compose up -d --build > /dev/null 2>&1
+		fi
+	fi
+
 }
 
 
@@ -223,6 +241,10 @@ while [[ $# -gt 0  ]]; do
 				firstInstall
 			fi
 			exit 1
+		;;
+		-v|--verbose)
+			verbose=1
+			shift
 		;;
 		-c|--cert)
 			checkRequisites
