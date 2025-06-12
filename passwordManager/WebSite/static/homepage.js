@@ -122,6 +122,52 @@ window.onload = () => {
       }
     });
   });
+
+  /**
+   * ADD EVENT TO DOWNLOAD BUTTON
+   */
+  document.getElementById("download-btn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    let table  = [];
+    Array.prototype.map.call(document.getElementsByTagName('tr'), element => {
+      let id = element.firstElementChild.textContent;
+      let name = document.getElementsByName("name-control")[0].value;
+      let username = document.getElementsByName("username-control")[0].value;
+      let password = document.getElementsByName("password-control")[0].value;
+      let uri = document.getElementsByName("uri-control")[0].value;
+      row = {
+        id: id,
+        name: name,
+        username: username,
+        password: password,
+        uri: uri
+      };
+
+      csvRows = [];
+      const headers = Object.keys(row.id);
+      csvRows.push(headers.join(','));
+      const values = Object.values(row).join(',');
+      csvRows.push(values);
+      csvRows.join('\n');
+      table.push(csvRows);
+    });
+
+    // Create a Blob with the CSV data and type
+    const blob = new Blob([table], { type: 'text/csv' });
+    
+    // Create a URL for the Blob
+    const url = URL.createObjectURL(blob);
+    
+    // Create an anchor tag for downloading
+    const a = document.createElement('a');
+    
+    // Set the URL and download attribute of the anchor tag
+    a.href = url;
+    a.download = 'passwords_encrypted.csv';
+    
+    // Trigger the download by clicking the anchor tag
+    a.click();
+  });
 }
 
 

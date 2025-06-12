@@ -16,12 +16,12 @@
           href="/">
         Password Manager
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
+      aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+      <div class="collapse navbar-collapse" id="navbarScroll">
+        <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" id="ul-style">
           <li class="nav-item">
             {% if account %}
             <a class="nav-link" href="#">Hello {{ account }}</a>
@@ -70,6 +70,14 @@
             {% else %}
             <a class="nav-link" href="{{ url_for('register')}}">Subscribe</a>
           </li>
+          {% endif %}
+          {% if account %}
+            <li>
+              <button type="button" class="btn nav-link" data-bs-toggle="modal" data-bs-target="#exampleModal"
+              data-bs-whatever="@mdo" id="download-btn">
+              Download
+            </button>
+            </li>
           {% endif %}
         </ul>
         <form class="d-flex" role="search" method="post">

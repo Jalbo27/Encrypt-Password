@@ -1,6 +1,6 @@
 body{
     overflow-x: hidden;
-    overflow-y: visible;
+    overflow-y: auto;
 }
 
 #form-element{
@@ -12,12 +12,16 @@ body{
     padding: 1.5em
 }
 
-nav{
+nav > div{
     display: flex;
     position: sticky;
     align-items: center;
     padding: 0.5em 1em;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 5px rgba(0,0,0,0.1);
+}
+
+#ul-style{
+    --bs-scroll-height: 100px;
 }
 
 #login-btn{
