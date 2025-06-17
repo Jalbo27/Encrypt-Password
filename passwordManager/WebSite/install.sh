@@ -73,13 +73,13 @@ function usage
 		--new-certificate	Install new certificate for the product only in this machine!.
 	-c, 	--cert			Specific certificate file [*.pkcs, *.crt, *.pem].
 	-k, 	--cert-key		Specify the key of the certificate passed by the other parameter (required --new-certificate parameter).
-	--tz,	--time-zone="TZ"	Specify the time zone
+	--tz,	--time-zone="TZ"		Specify the time zone
 	
 EXAMPLES:
 	./install.sh OR ./install.sh -i|--install			--> First installation with a valid auto generated certificate.
 	./install.sh --new-certificate					--> Generate and install a new certificate.
 	./install.sh -c|--certifcate [FILE] -k|--certificate-key [FILE]	--> Specify a custom certificate and a valid key of the certification.
-	./install.sh --tz=\"TZ\"|--time-zone=\"TZ\"			--> Specify the time zone of the product (It's for logs' purposes)"
+	./install.sh --tz=\"TZ\"|--time-zone=\"TZ\"				--> Specify the time zone of the product (It's for logs' purposes)"
 }
 
 
